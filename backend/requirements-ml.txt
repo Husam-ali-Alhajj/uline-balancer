@@ -1,0 +1,5 @@
+# Only needed for the ML module (AI engineer). Install on top of requirements.txt.
+-r requirements.txt
+numpy>=1.26
+scikit-learn>=1.4
+joblib>=1.3

@@ -1,0 +1,150 @@
+{
+  "instance": {
+    "task_count": 6,
+    "total_work_content": 23.0,
+    "cycle_time": 8.0,
+    "min_stations": 3
+  },
+  "solution": {
+    "num_stations": 3,
+    "stations": [
+      {
+        "index": 1,
+        "tasks": [
+          {
+            "name": "A",
+            "time": 4.0,
+            "side": "front"
+          },
+          {
+            "name": "F",
+            "time": 4.0,
+            "side": "back"
+          }
+        ],
+        "load": 8.0,
+        "idle": 0.0,
+        "utilization": 1.0
+      },
+      {
+        "index": 2,
+        "tasks": [
+          {
+            "name": "B",
+            "time": 3.0,
+            "side": "front"
+          },
+          {
+            "name": "C",
+            "time": 5.0,
+            "side": "front"
+          }
+        ],
+        "load": 8.0,
+        "idle": 0.0,
+        "utilization": 1.0
+      },
+      {
+        "index": 3,
+        "tasks": [
+          {
+            "name": "D",
+            "time": 2.0,
+            "side": "front"
+          },
+          {
+            "name": "E",
+            "time": 5.0,
+            "side": "front"
+          }
+        ],
+        "load": 7.0,
+        "idle": 1.0,
+        "utilization": 0.875
+      }
+    ]
+  },
+  "metrics": {
+    "efficiency": 0.9583,
+    "balance_delay": 0.0417,
+    "total_idle_time": 1.0,
+    "smoothness_index": 1.0,
+    "bottleneck_stations": [
+      1,
+      2
+    ],
+    "high_idle_stations": [],
+    "workers": {
+      "count": 3,
+      "suggested": 3,
+      "workload_per_worker": 7.6667
+    }
+  },
+  "ga": {
+    "seed": 42,
+    "settings": {
+      "population_size": 50,
+      "max_generations": 100,
+      "crossover_rate": 0.8,
+      "mutation_rate": 0.1,
+      "elitism_count": 2,
+      "tournament_size": 3,
+      "stagnation_limit": 30,
+      "seed": 42
+    },
+    "generations_run": 50,
+    "stop_reason": "stagnation",
+    "best_fitness": 3.0417,
+    "runtime_seconds": 0.42,
+    "convergence": [
+      {
+        "generation": 0,
+        "best_fitness": 4.0625,
+        "avg_fitness": 4.734
+      },
+      {
+        "generation": 10,
+        "best_fitness": 3.125,
+        "avg_fitness": 3.912
+      },
+      {
+        "generation": 20,
+        "best_fitness": 3.0417,
+        "avg_fitness": 3.481
+      },
+      {
+        "generation": 30,
+        "best_fitness": 3.0417,
+        "avg_fitness": 3.2205
+      },
+      {
+        "generation": 40,
+        "best_fitness": 3.0417,
+        "avg_fitness": 3.1502
+      },
+      {
+        "generation": 50,
+        "best_fitness": 3.0417,
+        "avg_fitness": 3.1288
+      }
+    ]
+  },
+  "baseline": null,
+  "recommendations": [
+    {
+      "code": "MIN_STATIONS_REACHED",
+      "severity": "info",
+      "station": null,
+      "message": "The solution uses 3 stations, the theoretical minimum for this cycle time.",
+      "triggered_by": "num_stations=3, min_stations=3"
+    },
+    {
+      "code": "WELL_BALANCED",
+      "severity": "info",
+      "station": null,
+      "message": "Line efficiency is 95.8%, which is well balanced.",
+      "triggered_by": "efficiency=0.9583"
+    }
+  ],
+  "model_version": "rule-based-v0"
+}

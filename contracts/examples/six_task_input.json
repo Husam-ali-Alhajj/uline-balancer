@@ -1,0 +1,59 @@
+{
+  "title": "Six-task example",
+  "tasks": [
+    {
+      "name": "A",
+      "time": 4.0,
+      "predecessors": []
+    },
+    {
+      "name": "B",
+      "time": 3.0,
+      "predecessors": [
+        "A"
+      ]
+    },
+    {
+      "name": "C",
+      "time": 5.0,
+      "predecessors": [
+        "A"
+      ]
+    },
+    {
+      "name": "D",
+      "time": 2.0,
+      "predecessors": [
+        "B",
+        "C"
+      ]
+    },
+    {
+      "name": "E",
+      "time": 5.0,
+      "predecessors": [
+        "C"
+      ]
+    },
+    {
+      "name": "F",
+      "time": 4.0,
+      "predecessors": [
+        "D",
+        "E"
+      ]
+    }
+  ],
+  "working_time_per_day": 480.0,
+  "production_per_day": 60,
+  "ga_settings": {
+    "population_size": 50,
+    "max_generations": 100,
+    "crossover_rate": 0.8,
+    "mutation_rate": 0.1,
+    "elitism_count": 2,
+    "tournament_size": 3,
+    "stagnation_limit": 30,
+    "seed": 42
+  }
+}

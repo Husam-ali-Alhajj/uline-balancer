@@ -1,0 +1,137 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "run_result.schema.json",
+  "title": "RunResult",
+  "description": "The result stored with a succeeded run (field `result` of GET /runs/{id}).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["instance", "solution", "metrics", "ga", "baseline", "recommendations", "model_version"],
+  "properties": {
+    "instance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["task_count", "total_work_content", "cycle_time", "min_stations"],
+      "properties": {
+        "task_count": { "type": "integer", "minimum": 1 },
+        "total_work_content": { "type": "number", "description": "Sum of all task times (minutes)." },
+        "cycle_time": { "type": "number", "description": "working_time_per_day / production_per_day (minutes)." },
+        "min_stations": { "type": "integer", "minimum": 1, "description": "ceil(total_work_content / cycle_time)." }
+      }
+    },
+    "solution": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["num_stations", "stations"],
+      "properties": {
+        "num_stations": { "type": "integer", "minimum": 1 },
+        "stations": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["index", "tasks", "load", "idle", "utilization"],
+            "properties": {
+              "index": { "type": "integer", "minimum": 1, "description": "Station number, 1-based, in U order." },
+              "tasks": {
+                "type": "array",
+                "minItems": 1,
+                "description": "Tasks in placement order.",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": ["name", "time", "side"],
+                  "properties": {
+                    "name": { "type": "string" },
+                    "time": { "type": "number" },
+                    "side": { "enum": ["front", "back"], "description": "front = placed because all predecessors were assigned; back = placed because all successors were assigned (see MASTER.md section 5)." }
+                  }
+                }
+              },
+              "load": { "type": "number", "description": "Sum of task times in this station." },
+              "idle": { "type": "number", "description": "cycle_time - load." },
+              "utilization": { "type": "number", "description": "load / cycle_time (0 to 1)." }
+            }
+          }
+        }
+      }
+    },
+    "metrics": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["efficiency", "balance_delay", "total_idle_time", "smoothness_index", "bottleneck_stations", "high_idle_stations", "workers"],
+      "properties": {
+        "efficiency": { "type": "number", "description": "total_work / (stations * cycle_time)." },
+        "balance_delay": { "type": "number", "description": "1 - efficiency." },
+        "total_idle_time": { "type": "number", "description": "stations * cycle_time - total_work." },
+        "smoothness_index": { "type": "number", "description": "sqrt(sum((max_load - load_i)^2))." },
+        "bottleneck_stations": { "type": "array", "items": { "type": "integer" }, "description": "Stations whose load equals the maximum load." },
+        "high_idle_stations": { "type": "array", "items": { "type": "integer" }, "description": "Stations idle for more than 20% of the cycle time." },
+        "workers": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["count", "suggested", "workload_per_worker"],
+          "properties": {
+            "count": { "type": "integer", "minimum": 1, "description": "Input override, or the suggested value." },
+            "suggested": { "type": "integer", "minimum": 1, "description": "PROVISIONAL (D3): one worker per station." },
+            "workload_per_worker": { "type": "number", "description": "total_work / count (minutes)." }
+          }
+        }
+      }
+    },
+    "ga": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["seed", "settings", "generations_run", "stop_reason", "best_fitness", "runtime_seconds", "convergence"],
+      "properties": {
+        "seed": { "type": "integer", "description": "The seed actually used (generated if the input had none)." },
+        "settings": { "type": "object", "description": "The GA settings actually used (same shape as ga_settings in the input)." },
+        "generations_run": { "type": "integer", "minimum": 0 },
+        "stop_reason": { "enum": ["max_generations", "stagnation", "time_limit"] },
+        "best_fitness": { "type": "number", "description": "Lower is better. PROVISIONAL formula (D7): stations + smoothness_index / (stations * cycle_time)." },
+        "runtime_seconds": { "type": "number", "minimum": 0 },
+        "convergence": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["generation", "best_fitness", "avg_fitness"],
+            "properties": {
+              "generation": { "type": "integer", "minimum": 0 },
+              "best_fitness": { "type": "number" },
+              "avg_fitness": { "type": "number" }
+            }
+          }
+        }
+      }
+    },
+    "baseline": {
+      "type": ["object", "null"],
+      "additionalProperties": false,
+      "description": "Result of the simple baseline heuristic, or null until it is implemented (AI-F6).",
+      "required": ["name", "num_stations", "efficiency"],
+      "properties": {
+        "name": { "type": "string" },
+        "num_stations": { "type": "integer", "minimum": 1 },
+        "efficiency": { "type": "number" }
+      }
+    },
+    "recommendations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["code", "severity", "station", "message", "triggered_by"],
+        "properties": {
+          "code": { "type": "string", "description": "Stable identifier, e.g. HIGH_IDLE_STATION." },
+          "severity": { "enum": ["info", "warning"] },
+          "station": { "type": ["integer", "null"], "description": "Station the advice is about, or null." },
+          "message": { "type": "string", "description": "Text shown to the user." },
+          "triggered_by": { "type": "string", "description": "The metric that triggered it." }
+        }
+      }
+    },
+    "model_version": { "type": "string", "description": "Recommender version, e.g. rule-based-v0." }
+  }
+}

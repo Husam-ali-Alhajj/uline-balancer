@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "run_status.schema.json",
+  "title": "RunStatus",
+  "description": "Response of GET /runs/{id}. `result` is present only when status is 'succeeded' and follows run_result.schema.json. POST /runs returns {run_id, status} only.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["run_id", "status", "title", "created_at", "started_at", "finished_at", "progress", "error", "result"],
+  "properties": {
+    "run_id": { "type": "string", "format": "uuid" },
+    "status": { "enum": ["queued", "running", "succeeded", "failed"] },
+    "title": { "type": ["string", "null"] },
+    "created_at": { "type": "string", "format": "date-time" },
+    "started_at": { "type": ["string", "null"], "format": "date-time" },
+    "finished_at": { "type": ["string", "null"], "format": "date-time" },
+    "progress": {
+      "type": ["object", "null"],
+      "additionalProperties": false,
+      "required": ["generation", "max_generations"],
+      "properties": {
+        "generation": { "type": "integer", "minimum": 0 },
+        "max_generations": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "error": {
+      "type": ["object", "null"],
+      "additionalProperties": false,
+      "required": ["code", "message"],
+      "properties": {
+        "code": { "type": "string" },
+        "message": { "type": "string", "description": "Short and safe to show to a user; never a stack trace." }
+      }
+    },
+    "result": { "type": ["object", "null"], "description": "See run_result.schema.json." }
+  }
+}
