@@ -1,3 +1,5 @@
+Opened by the project lead when integrating a track branch or a feature branch into `develop`.
+
 ## What does this change?
 <!-- One or two sentences. Link the ticket. -->
 

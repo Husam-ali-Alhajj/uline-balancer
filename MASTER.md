@@ -34,6 +34,10 @@ such as zoning or parallel stations.
 | Data and validation | Industrial engineering students | provide benchmark and real data | Real data is anonymised and never committed |
 
 Ownership means "you change it". Changing a file outside your folder needs the project lead's approval.
+
+Branches: `Frontend` (frontend engineer), `AI` (AI engineer), `feature/*` (project lead). The project lead merges
+everything; see CONTRIBUTING.md.
+
 Files in `contracts/` can only be changed by the project lead (see section 7).
 
 ## 3. Glossary
@@ -190,7 +194,7 @@ Deliberately NOT used: Docker, Celery/Redis, microservices, Next.js, Prisma, Typ
 - Two-week sprints. Sprint 0 is week 1 (setup, contracts, walking skeleton). Every sprint ends with an
   end-to-end demo, not "70% of the backend".
 - Work comes as small tickets (`docs/TICKET_TEMPLATE.md`) with a clear done-criteria list.
-- Branches, pull requests and the Definition of Done: see `CONTRIBUTING.md`.
+- Branch model, the integration routine and the Definition of Done: see `CONTRIBUTING.md`.
 - AI tools are allowed and expected, under the rules in `AI_RULES.md`. You are responsible for every line you commit.
 - Feature freeze at the start of week 7; weeks 7 and 8 are testing, polish, documentation and the demo.
 - Cut list if time runs short (first to last): run comparison, exports, precedence preview, ML polish.
