@@ -20,7 +20,7 @@ If you are a human: paste "Read MASTER.md and AI_RULES.md first" into your first
 - Edit a database migration that is already merged, or change tables outside Alembic. Add a new migration instead.
 - Edit `.github/`, `.gitignore`, `MASTER.md`, `AI_RULES.md` or `CONTRIBUTING.md`.
 - Run destructive commands: `git push --force`, `git reset --hard`, `git clean -fd`, `rm -rf`, dropping tables, deleting branches.
-- Commit directly to `main` or `develop`. Always use a feature branch and a pull request.
+- Commit to `main` or `develop`, or create, switch, delete, merge, rebase or force-push any branch.
 - Add Docker, Celery, Redis, a new framework, a new language, or any tool listed as "deliberately NOT used" in MASTER.md.
 
 ## 3. Security (non-negotiable)
@@ -61,10 +61,12 @@ If you are a human: paste "Read MASTER.md and AI_RULES.md first" into your first
 
 ## 6. Git rules
 
-- Branch names: `feature/<track>-<short-name>` or `fix/<short-name>`, created from `develop`.
-- Commit messages: short and in the imperative ("Add station table component"). One idea per commit.
+- Work only on the branch you are on, which is the assigned branch of your track (`Frontend`, `AI`, or the project
+  lead's `feature/*`). If you are on a different branch, stop and tell the human.
+- Commit small and often, with short imperative messages ("Add station table component"), one idea per commit.
+- Never merge, rebase, `reset --hard` or force-push; the project lead integrates.
 - Do not commit generated files, `.env`, databases (`*.db`), `node_modules`, `.venv`, build output.
-- Open the pull request against `develop` and fill in the template honestly.
+- If git reports a conflict or anything unclear, stop and tell the human instead of resolving it.
 
 ## 7. Honesty and communication
 
@@ -77,6 +79,7 @@ If you are a human: paste "Read MASTER.md and AI_RULES.md first" into your first
 ```
 Read MASTER.md and AI_RULES.md first and follow them.
 Task: <ticket title and link or text>
+Branch: <Frontend | AI>. Stay on it; do not create or switch branches.
 Folder you may change: <e.g. frontend/src/components>
 Done when: <the acceptance criteria from the ticket>
 Do not touch: contracts/, dependencies, anything outside the folder above.
