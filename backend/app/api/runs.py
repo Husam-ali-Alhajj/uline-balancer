@@ -1,3 +1,5 @@
+from typing import Annotated
+
 from fastapi import APIRouter, Depends, Response
 from sqlalchemy.orm import Session
 
@@ -10,9 +12,11 @@ from app.services import run_service
 
 router = APIRouter(prefix="/runs", tags=["runs"])
 
+SessionDep = Annotated[Session, Depends(get_session)]
+
 
 @router.post("", status_code=202, response_model=RunCreated)
-def create_run(problem: ProblemInput, session: Session = Depends(get_session)) -> RunCreated:
+def create_run(problem: ProblemInput, session: SessionDep) -> RunCreated:
     """Validate, create a run (status 'queued'), start it in the background, return its id."""
     if run_service.count_active(session) >= config.MAX_ACTIVE_RUNS:
         raise ApiError(429, "too_many_active_runs", "Too many runs in progress. Try again shortly.")
@@ -23,12 +27,12 @@ def create_run(problem: ProblemInput, session: Session = Depends(get_session)) -
 
 
 @router.get("", response_model=list[RunSummary])
-def list_runs(session: Session = Depends(get_session)) -> list[RunSummary]:
+def list_runs(session: SessionDep) -> list[RunSummary]:
     return run_service.list_runs(session)
 
 
 @router.get("/{run_id}", response_model=RunStatus)
-def get_run(run_id: str, session: Session = Depends(get_session)) -> RunStatus:
+def get_run(run_id: str, session: SessionDep) -> RunStatus:
     run = run_service.get_run(session, run_id)
     if run is None:
         raise ApiError(404, "not_found", "Run not found.")
@@ -36,7 +40,7 @@ def get_run(run_id: str, session: Session = Depends(get_session)) -> RunStatus:
 
 
 @router.delete("/{run_id}", status_code=204)
-def delete_run(run_id: str, session: Session = Depends(get_session)) -> Response:
+def delete_run(run_id: str, session: SessionDep) -> Response:
     run = run_service.get_run(session, run_id)
     if run is None:
         raise ApiError(404, "not_found", "Run not found.")
