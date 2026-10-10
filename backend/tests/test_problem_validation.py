@@ -1,11 +1,10 @@
 import copy
 
 import pytest
+from helpers import load_example
 from pydantic import ValidationError
 
 from app.schemas.problem import MAX_TASKS, ProblemInput
-
-from helpers import load_example
 
 
 def _data() -> dict:

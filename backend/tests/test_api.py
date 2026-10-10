@@ -2,9 +2,9 @@
 
 import copy
 
-from app.ga.placement import check_solution
-
 from helpers import instance_from_input, load_example
+
+from app.ga.placement import check_solution
 
 
 def _body() -> dict:

@@ -1,11 +1,11 @@
 """Tests for the pure GA modules: placement rule, checker, metrics, fitness, skeleton engine."""
 
+from helpers import instance_from_input, load_example
+
 from app.ga.engine import solve
 from app.ga.fitness import compute_fitness
 from app.ga.metrics import compute_metrics
 from app.ga.placement import check_solution, place_station
-
-from helpers import instance_from_input, load_example
 
 
 def _inst():

@@ -2,6 +2,7 @@
 
 import json
 
+from helpers import CONTRACTS, instance_from_input, load_example
 from jsonschema import Draft202012Validator
 
 from app.ga.metrics import compute_metrics
@@ -12,8 +13,6 @@ from app.schemas.problem import ProblemInput
 from app.schemas.result import RunResult
 from app.schemas.run import RunStatus
 from app.services.instance import summarize
-
-from helpers import CONTRACTS, instance_from_input, load_example
 
 
 def _schema(name: str) -> dict:
