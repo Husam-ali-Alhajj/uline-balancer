@@ -42,16 +42,20 @@ class ProblemInput(BaseModel):
     title: str | None = Field(default=None, max_length=100)
     tasks: list[Task] = Field(min_length=1, max_length=MAX_TASKS)
     working_time_per_day: float = Field(gt=0)
+    break_time_per_day: float = Field(default=0, ge=0)
     production_per_day: int = Field(ge=1)
     workers: int | None = Field(default=None, ge=1)
     ga_settings: GASettings = Field(default_factory=GASettings)
 
     @property
     def cycle_time(self) -> float:
-        return self.working_time_per_day / self.production_per_day
+        return (self.working_time_per_day - self.break_time_per_day) / self.production_per_day
 
     @model_validator(mode="after")
     def _check_instance(self) -> ProblemInput:
+        if self.break_time_per_day >= self.working_time_per_day:
+            raise ValueError("break and down time must be smaller than the working time per day")
+
         names = [t.name for t in self.tasks]
         duplicates = sorted({n for n in names if names.count(n) > 1})
         if duplicates:

@@ -71,3 +71,22 @@ def test_unknown_field_is_rejected():
     data["surprise"] = 1
     with pytest.raises(ValidationError):
         ProblemInput.model_validate(data)
+
+
+def test_break_time_reduces_cycle_time():
+    data = _data()
+    data["break_time_per_day"] = 40
+    assert ProblemInput.model_validate(data).cycle_time == pytest.approx(7.3333, abs=1e-4)
+
+
+def test_break_time_equal_to_working_time_is_rejected():
+    data = _data()
+    data["break_time_per_day"] = data["working_time_per_day"]
+    _expect_error(data, "break and down time must be smaller than the working time per day")
+
+
+def test_negative_break_time_is_rejected():
+    data = _data()
+    data["break_time_per_day"] = -1
+    with pytest.raises(ValidationError):
+        ProblemInput.model_validate(data)

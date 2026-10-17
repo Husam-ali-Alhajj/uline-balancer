@@ -1,7 +1,7 @@
 # MASTER: U-Line Balancing App
 
 The single source of truth for this project. Read this file fully before working on anything.
-If this file and the code disagree, tell the project lead; do not guess.
+If this file and the code disagree, tell the integration engineer; do not guess.
 
 Status: scaffold v0.1 (October 2026). Open decisions are listed in `docs/DECISIONS.md`.
 
@@ -21,14 +21,16 @@ metrics, charts and short recommendations. Every run is stored so it can be reop
 - A small ML layer that turns result metrics into written recommendations.
 
 **Not goals** (out of scope, do not build): simulation, real-time line control, reinforcement learning,
-a neural network that warm-starts the GA, phone layouts, user accounts (for now), special constraints
-such as zoning or parallel stations.
+a neural network that warm-starts the GA, phone layouts, special constraints such as zoning or parallel
+stations.
+
+User accounts with saved calculations are planned (Supabase Auth); not built yet.
 
 ## 2. Team and ownership
 
 | Track | Owner | Works in | Notes |
 |---|---|---|---|
-| Backend, GA, integration, reviews | Project lead | `backend/app/` (all except `ml/`), `contracts/`, `docs/` | Merges every pull request |
+| Backend, GA, integration, reviews | Integration engineer | `backend/app/` (all except `ml/`), `contracts/`, `docs/` | Merges every pull request |
 | Frontend | Frontend engineer | `frontend/` | Builds against the mock API first |
 | ML recommendations | AI engineer | `backend/app/ml/`, `backend/ml_training/` | Rule-based version already exists |
 | Data and validation | Industrial engineering students | provide benchmark and real data | Real data is anonymised and never committed |
@@ -59,12 +61,14 @@ Files in `contracts/` can only be changed by the project lead (see section 7).
 Given tasks, precedence and a cycle time C: use as **few stations as possible** so that no station's
 total task time exceeds C and the U-line rule holds. Secondary goal: workloads as even as possible.
 
-**Inputs** (`contracts/problem_input.schema.json`): tasks (1 to 50), working time per day, production per
-day, optional worker count, optional GA settings and seed.
+**Inputs** (`contracts/problem_input.schema.json`): tasks (1 to 50), working time per day, break and down
+time per day (zero or more, below the working time), production per day, optional worker count, optional
+GA settings and seed.
 
 **Validation rules** (backend `app/schemas/problem.py`, mirrored in the frontend):
 unique task names, positive times, predecessors must exist, a task cannot precede itself, no cycles in the
-precedence graph, every task time <= cycle time, at most 50 tasks, production >= 1.
+precedence graph, every task time <= cycle time, at most 50 tasks, production >= 1, break and down time per
+day smaller than the working time per day.
 
 **The U-line rule.** A task can be placed in the current station when
 - all its predecessors are already assigned (it goes on the **front** leg), or
@@ -80,7 +84,8 @@ Let m = number of stations, load_i = total task time in station i, C = cycle tim
 
 | Name | Formula |
 |---|---|
-| Cycle time | C = working_time_per_day / production_per_day |
+| Available time per day | working_time_per_day - break_time_per_day |
+| Cycle time | C = (working_time_per_day - break_time_per_day) / production_per_day |
 | Minimum stations | ceil(T / C) |
 | Idle time of station i | C - load_i |
 | Utilisation of station i | load_i / C |
@@ -141,7 +146,7 @@ model_version, timestamps). New tables only through an Alembic migration.
 The current `engine.py` is a walking skeleton (valid but not optimised); the real GA replaces its body.
 Planned design: permutation chromosome, decoder using the U-line rule (feasible by construction),
 tournament selection, order crossover, swap mutation, elitism, stop on max generations or stagnation,
-fixed seed for reproducibility. Written by the project lead step by step; do not replace it with a library.
+fixed seed for reproducibility. Written by the integration engineer step by step; do not replace it with a library.
 
 **ML (`backend/app/ml/`).** `interface.py` defines `RecommendationInput`, `Recommendation` and the
 `Recommender` protocol. `rule_based.py` is the fallback and ships first. A trained model implements the same
@@ -155,7 +160,7 @@ never blocks a result). Every recommendation names the metric that triggered it.
 
 The backend Pydantic models (`app/schemas/`) must match the schemas, and the tests check that the examples
 satisfy both. The frontend mock API (MSW) is built from the same examples. **Contract changes** go through
-the project lead: a pull request that updates the schema, the Pydantic model, the example and the mock
+the integration engineer: a pull request that updates the schema, the Pydantic model, the example and the mock
 together, reviewed by all tracks.
 
 ## 8. Repository map
@@ -209,7 +214,7 @@ Deliberately NOT used: Docker, Celery/Redis, microservices, Next.js, Prisma, Typ
 5. CORS allows only the frontend origin. HTTPS in deployment.
 6. Errors shown to users are short and safe, never stack traces.
 7. Real factory data is anonymised and never committed. Benchmark datasets are credited to their source.
-8. Add dependencies only with the project lead's approval; keep versions pinned (lock files committed).
+8. Add dependencies only with the integration engineer's approval; keep versions pinned (lock files committed).
 
 ## 12. Roadmap
 

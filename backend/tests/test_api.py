@@ -2,6 +2,7 @@
 
 import copy
 
+import pytest
 from helpers import instance_from_input, load_example
 
 from app.ga.placement import check_solution
@@ -21,6 +22,15 @@ def test_validate_returns_summary(client):
     assert res.json()["instance"] == {
         "task_count": 6, "total_work_content": 23.0, "cycle_time": 8.0, "min_stations": 3,
     }
+
+
+def test_validate_with_break_time_reduces_cycle_time(client):
+    body = load_example("six_task_with_breaks_input.json")
+    res = client.post("/validate", json=body)
+    assert res.status_code == 200
+    instance = res.json()["instance"]
+    assert instance["cycle_time"] == pytest.approx(7.3333, abs=1e-4)
+    assert instance["min_stations"] == 4
 
 
 def test_invalid_input_uses_standard_error_format(client):

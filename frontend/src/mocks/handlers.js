@@ -13,7 +13,7 @@ function errorResponse(status, code, message, details = []) {
 
 function summarize(problem) {
   const total = problem.tasks.reduce((sum, t) => sum + t.time, 0);
-  const cycle = problem.working_time_per_day / problem.production_per_day;
+  const cycle = (problem.working_time_per_day - (problem.break_time_per_day ?? 0)) / problem.production_per_day;
   return {
     task_count: problem.tasks.length,
     total_work_content: total,

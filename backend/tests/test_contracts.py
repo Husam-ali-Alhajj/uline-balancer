@@ -27,6 +27,7 @@ def test_schemas_are_valid_json_schema():
 def test_examples_match_json_schemas():
     pairs = [
         ("six_task_input.json", "problem_input.schema.json"),
+        ("six_task_with_breaks_input.json", "problem_input.schema.json"),
         ("six_task_result.json", "run_result.schema.json"),
         ("six_task_run_status_succeeded.json", "run_status.schema.json"),
     ]
@@ -36,6 +37,7 @@ def test_examples_match_json_schemas():
 
 def test_examples_parse_with_pydantic():
     ProblemInput.model_validate(load_example("six_task_input.json"))
+    ProblemInput.model_validate(load_example("six_task_with_breaks_input.json"))
     RunResult.model_validate(load_example("six_task_result.json"))
     RunStatus.model_validate(load_example("six_task_run_status_succeeded.json"))
 

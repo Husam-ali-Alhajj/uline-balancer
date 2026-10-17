@@ -11,7 +11,7 @@ The agreement between the backend, the frontend and the ML module.
 | `examples/six_task_result.json` | the matching result (3 stations, efficiency 95.8%) |
 | `examples/six_task_run_status_succeeded.json` | a full `GET /runs/{id}` response |
 
-**Do not edit these files on your own.** Only the project lead changes contracts, together with the Pydantic models
+**Do not edit these files on your own.** Only the integration engineer changes contracts, together with the Pydantic models
 (`backend/app/schemas/`), the example files and the frontend mocks (`frontend/src/mocks/`), in one reviewed pull request.
 
 Cross-field validation rules that JSON Schema cannot express are listed in `MASTER.md` section 4 and implemented in

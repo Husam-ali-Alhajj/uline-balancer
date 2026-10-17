@@ -13,7 +13,7 @@ If you are a human: paste "Read MASTER.md and AI_RULES.md first" into your first
 - Do not delete or rewrite working code unless the task says so.
 - If the task is unclear, ask a question. Do not guess and build.
 
-## 2. Never do these without explicit approval from the project lead
+## 2. Never do these without explicit approval from the integration engineer
 
 - Change anything in `contracts/` (schemas or examples), or an API endpoint's shape.
 - Add, remove or upgrade a dependency (`requirements*.txt`, `package.json`, lock files).

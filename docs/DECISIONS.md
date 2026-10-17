@@ -16,6 +16,8 @@ Status: **Decided**, **Provisional** (the scaffold uses this value until the mee
 | Phones | Out of scope; desktop-first, usable on a tablet | Scope and time |
 | Removed from stack | pydantic-settings, uv, slowapi (rate limiting is a Should), frontend unit tests | Time constraints |
 | Branching | Long-lived track branches `Frontend` and `AI`, controlled and merged by the project lead at least weekly | Teammates are new to git and work in separate folders; teammates never merge or create branches |
+| D4 | User accounts with saved previous calculations are required (planned: Supabase Auth, owner on each run, implemented later) | Needed so a user can reopen past runs |
+| Cycle time accounts for break and down time (`break_time_per_day`) | `C = (working_time_per_day - break_time_per_day) / production_per_day` | Raw working time overstates available capacity |
 
 ## Provisional (implemented in the scaffold, to be confirmed)
 
@@ -24,7 +26,6 @@ Status: **Decided**, **Provisional** (the scaffold uses this value until the mee
 | D1 | Type 1 only (minimise stations for a given cycle time) | whole project |
 | D2 | Max 50 tasks | `schemas/problem.py`, `problem_input.schema.json` |
 | D3 | Suggested workers = number of stations; user may override; used for reporting only | `services/solver.py` |
-| D4 | No user accounts | runs are not tied to a user |
 | D7 | Fitness = stations + smoothness_index / (stations x cycle_time) | `ga/fitness.py`, MASTER.md section 5 |
 | D11 | Frontend in plain JavaScript (JSX), Tailwind only, no component library | `frontend/` |
 

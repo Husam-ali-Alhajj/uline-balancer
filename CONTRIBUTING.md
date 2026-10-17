@@ -50,7 +50,7 @@ lead only.
 Use `docs/TICKET_TEMPLATE.md`. A good ticket has: goal, files you may change, inputs and outputs, and a checklist of
 done-criteria. If a ticket is unclear, ask before starting.
 
-## One-time GitHub setup (project lead)
+## One-time GitHub setup (integration engineer)
 
 1. Push all branches. In Settings > General set the default branch to `develop`.
 2. Settings > Branches: add protection rules for `main` and `develop` only: require a pull request, require the
