@@ -35,12 +35,12 @@ User accounts with saved calculations are planned (Supabase Auth); not built yet
 | ML recommendations | AI engineer | `backend/app/ml/`, `backend/ml_training/` | Rule-based version already exists |
 | Data and validation | Industrial engineering students | provide benchmark and real data | Real data is anonymised and never committed |
 
-Ownership means "you change it". Changing a file outside your folder needs the project lead's approval.
+Ownership means "you change it". Changing a file outside your folder needs the integration engineer's approval.
 
-Branches: `Frontend` (frontend engineer), `AI` (AI engineer), `feature/*` (project lead). The project lead merges
+Branches: `Frontend` (frontend engineer), `AI` (AI engineer), `feature/*` (integration engineer). The integration engineer merges
 everything; see CONTRIBUTING.md.
 
-Files in `contracts/` can only be changed by the project lead (see section 7).
+Files in `contracts/` can only be changed by the integration engineer (see section 7).
 
 ## 3. Glossary
 

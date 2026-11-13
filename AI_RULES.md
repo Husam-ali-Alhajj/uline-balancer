@@ -61,10 +61,10 @@ If you are a human: paste "Read MASTER.md and AI_RULES.md first" into your first
 
 ## 6. Git rules
 
-- Work only on the branch you are on, which is the assigned branch of your track (`Frontend`, `AI`, or the project
-  lead's `feature/*`). If you are on a different branch, stop and tell the human.
+- Work only on the branch you are on, which is the assigned branch of your track (`Frontend`, `AI`, or the integration
+  engineer's `feature/*`). If you are on a different branch, stop and tell the human.
 - Commit small and often, with short imperative messages ("Add station table component"), one idea per commit.
-- Never merge, rebase, `reset --hard` or force-push; the project lead integrates.
+- Never merge, rebase, `reset --hard` or force-push; the integration engineer integrates.
 - Do not commit generated files, `.env`, databases (`*.db`), `node_modules`, `.venv`, build output.
 - If git reports a conflict or anything unclear, stop and tell the human instead of resolving it.
 

@@ -15,7 +15,7 @@ Status: **Decided**, **Provisional** (the scaffold uses this value until the mee
 | Docker | Not used | Time constraints; venv and plain hosting are enough |
 | Phones | Out of scope; desktop-first, usable on a tablet | Scope and time |
 | Removed from stack | pydantic-settings, uv, slowapi (rate limiting is a Should), frontend unit tests | Time constraints |
-| Branching | Long-lived track branches `Frontend` and `AI`, controlled and merged by the project lead at least weekly | Teammates are new to git and work in separate folders; teammates never merge or create branches |
+| Branching | Long-lived track branches `Frontend` and `AI`, controlled and merged by the integration engineer at least weekly | Teammates are new to git and work in separate folders; teammates never merge or create branches |
 | D4 | User accounts with saved previous calculations are required (planned: Supabase Auth, owner on each run, implemented later) | Needed so a user can reopen past runs |
 | Cycle time accounts for break and down time (`break_time_per_day`) | `C = (working_time_per_day - break_time_per_day) / production_per_day` | Raw working time overstates available capacity |
 

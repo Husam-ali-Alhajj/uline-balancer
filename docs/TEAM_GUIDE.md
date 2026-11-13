@@ -16,7 +16,7 @@ Stay on your branch forever. You should never need to switch again.
 
 ## Every working session
 
-1. Open VS Code and click **Sync Changes** (the arrows in the bottom status bar) to get the project lead's latest
+1. Open VS Code and click **Sync Changes** (the arrows in the bottom status bar) to get the integration engineer's latest
    updates.
 2. Work only in your own folders (`frontend/` for Frontend, `backend/app/ml/` and `backend/ml_training/` for AI).
 3. Run the checks before you commit:
@@ -45,9 +45,9 @@ Do step 5 at the end of every session, so your work is never only on your own ma
 
 ## If something goes wrong
 
-A conflict message, a red error, or just feeling unsure: **stop**. Do not try to fix git yourself. Send the project
-lead a screenshot. Nothing is lost — your work is saved in your commits.
+A conflict message, a red error, or just feeling unsure: **stop**. Do not try to fix git yourself. Send the integration
+engineer a screenshot. Nothing is lost — your work is saved in your commits.
 
-## When the project lead says "sync"
+## When the integration engineer says "sync"
 
 Click **Sync Changes**.

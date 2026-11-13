@@ -1,34 +1,34 @@
 # Contributing
 
-Short version: teammates work on their own long-lived branch; the project lead reviews and merges everything into
+Short version: teammates work on their own long-lived branch; the integration engineer reviews and merges everything into
 `develop`. Read `MASTER.md` first and `AI_RULES.md` if you use any AI tool.
 
 ## Branches
 
 | Branch | Purpose | Who writes to it |
 |---|---|---|
-| `main` | stable releases, tagged at the end of each sprint (`sprint-1`, `sprint-2`, ...) | project lead only, by merging `develop` |
-| `develop` | integration branch; **default branch on GitHub** | the project lead only |
+| `main` | stable releases, tagged at the end of each sprint (`sprint-1`, `sprint-2`, ...) | integration engineer only, by merging `develop` |
+| `develop` | integration branch; **default branch on GitHub** | the integration engineer only |
 | `Frontend` | long-lived branch for the frontend engineer | the frontend engineer only |
 | `AI` | long-lived branch for the AI engineer | the AI engineer only |
-| `feature/<name>` | the project lead's own task branches, e.g. `feature/ga-core` | the project lead only |
+| `feature/<name>` | the integration engineer's own task branches, e.g. `feature/ga-core` | the integration engineer only |
 
 Teammates work only on their own branch, and only in their own folders (see MASTER.md section 2). They never create,
 switch, delete, merge or rebase branches — if you're unsure which branch you're on, or git shows a conflict or
-anything unclear, stop and ask the project lead instead of resolving it yourself. The project lead does all merging.
+anything unclear, stop and ask the integration engineer instead of resolving it yourself. The integration engineer does all merging.
 
-## Integration routine (project lead)
+## Integration routine (integration engineer)
 
 At least once a week, and whenever a ticket is done:
 
 1. Check the branch: tests pass, the diff is clean. A pull request from the track branch into `develop`, opened by
-   the project lead, is the preferred way to review it and run CI.
+   the integration engineer, is the preferred way to review it and run CI.
 2. Merge it into `develop`.
 3. Merge `develop` back into the track branch, so the teammate gets the latest contracts and code.
 4. Tell the teammate to press "Sync Changes".
 
-A track branch must never go more than 7 days without this routine. Merge conflicts are resolved by the project
-lead only.
+A track branch must never go more than 7 days without this routine. Merge conflicts are resolved by the integration
+engineer only.
 
 ## Check your work before an integration
 
@@ -41,9 +41,9 @@ lead only.
 - [ ] Tests written or updated (backend logic); `ruff check .` and `pytest` pass
 - [ ] Frontend: `npm run build` passes and the change was tried in the browser
 - [ ] No secrets, no `.env`, no generated files committed
-- [ ] Docs updated if behaviour or setup changed (README or MASTER.md, via the project lead)
+- [ ] Docs updated if behaviour or setup changed (README or MASTER.md, via the integration engineer)
 - [ ] Integration: a pull request was opened into `develop`, the template filled in, reviewed and merged by the
-  project lead
+  integration engineer
 
 ## Tickets
 
