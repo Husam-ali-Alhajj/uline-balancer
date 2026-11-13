@@ -63,7 +63,10 @@ If you are a human: paste "Read MASTER.md and AI_RULES.md first" into your first
 
 - Work only on the branch you are on, which is the assigned branch of your track (`Frontend`, `AI`, or the integration
   engineer's `feature/*`). If you are on a different branch, stop and tell the human.
-- Commit small and often, with short imperative messages ("Add station table component"), one idea per commit.
+- Never commit on your own. Commit only when the developer explicitly asks you to; until then, leave your changes
+  uncommitted for the developer to review. A request to commit covers that one commit only, not later ones.
+- When asked to commit, keep commits small, with short imperative messages ("Add station table component"), one idea
+  per commit.
 - Never merge, rebase, `reset --hard` or force-push; the integration engineer integrates.
 - Do not commit generated files, `.env`, databases (`*.db`), `node_modules`, `.venv`, build output.
 - If git reports a conflict or anything unclear, stop and tell the human instead of resolving it.
