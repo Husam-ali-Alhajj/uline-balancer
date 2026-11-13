@@ -234,8 +234,10 @@ and in another terminal `cd frontend && npm install && npm run dev`.
 
 ## 14. Known gaps in this scaffold (be honest about them)
 
-- The GA is a walking skeleton. The decoder, operators and baseline are stubs.
-- The frontend has a working skeleton (example run, polling, one chart) but no input form and no real U diagram yet.
-- The scaffold was assembled without internet access. The pure-Python parts (GA checker, metrics, ML rules, example
-  consistency) were executed and pass. The FastAPI, Pydantic, SQLAlchemy, Alembic and frontend parts were written
-  but not executed. **Ticket zero** is to run `pytest`, `ruff check .` and `npm run build`, and fix whatever fails.
+**Ticket zero is done.** `ruff check .`, `pytest` and `npm run build` run and pass.
+
+Known gaps:
+
+- GA: the decoder, operators and baseline are stubs.
+- Frontend: no input form and no real U diagram yet.
+- Not done yet: user accounts, deployment and the Supabase connection.
