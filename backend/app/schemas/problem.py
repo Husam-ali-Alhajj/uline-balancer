@@ -95,4 +95,11 @@ class ProblemInput(BaseModel):
                     f"task '{task.name}' ({task.time:g} min) is longer than the cycle time "
                     f"({cycle_time:g} min)"
                 )
+        # IE formulas doc section 2: max(t_i) <= C <= total work content
+        total_work = sum(task.time for task in self.tasks)
+        if cycle_time > total_work + EPS:
+            raise ValueError(
+                f"the cycle time ({cycle_time:g} min) is longer than the total work content "
+                f"({total_work:g} min); increase the production per day"
+            )
         return self

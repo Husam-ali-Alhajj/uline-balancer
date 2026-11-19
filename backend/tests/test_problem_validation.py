@@ -51,6 +51,18 @@ def test_task_longer_than_cycle_time():
     _expect_error(data, "longer than the cycle time")
 
 
+def test_cycle_time_longer_than_total_work_is_rejected():
+    data = _data()
+    data["production_per_day"] = 10  # C = 48 > total work 23
+    _expect_error(data, "longer than the total work content")
+
+
+def test_cycle_time_equal_to_total_work_is_accepted():
+    data = _data()
+    data["tasks"] = [{"name": "A", "time": 8.0, "predecessors": []}]  # C = 8 = total work
+    assert ProblemInput.model_validate(data).cycle_time == 8.0
+
+
 def test_non_positive_values():
     for key, value in (("production_per_day", 0), ("working_time_per_day", 0)):
         data = _data()

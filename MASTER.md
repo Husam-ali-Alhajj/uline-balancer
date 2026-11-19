@@ -67,8 +67,9 @@ GA settings and seed.
 
 **Validation rules** (backend `app/schemas/problem.py`, mirrored in the frontend):
 unique task names, positive times, predecessors must exist, a task cannot precede itself, no cycles in the
-precedence graph, every task time <= cycle time, at most 50 tasks, production >= 1, break and down time per
-day smaller than the working time per day.
+precedence graph, every task time <= cycle time, cycle time <= total work content (max(tᵢ) <= C <= Σt,
+IE formulas document section 2), at most 50 tasks, production >= 1, break and down time per day smaller
+than the working time per day.
 
 **The U-line rule.** A task can be placed in the current station when
 - all its predecessors are already assigned (it goes on the **front** leg), or
@@ -80,26 +81,37 @@ assigned (front); if none, place the first task whose successors are all assigne
 
 ## 5. Formulas (single definition; code and docs must match)
 
-Let m = number of stations, load_i = total task time in station i, C = cycle time, T = total work content.
+Source: the IE team's *U-Shaped Assembly Line Balancing: Formulas and Worked Example*
+(`U-Shaped_Assembly_Line_Balancing_Formulas_updated.docx`, the latest version), sections 1 to 3 and 11.
+The notation follows that document.
+
+Notation: n = number of tasks, tᵢ = time of task i, C = cycle time, N = number of stations used,
+STⱼ = station time of station j (sum of its task times), STmax = the largest STⱼ, Σt = total work content.
 
 | Name | Formula |
 |---|---|
 | Available time per day | working_time_per_day - break_time_per_day |
 | Cycle time | C = (working_time_per_day - break_time_per_day) / production_per_day |
-| Minimum stations | ceil(T / C) |
-| Idle time of station i | C - load_i |
-| Utilisation of station i | load_i / C |
-| Efficiency | T / (m x C) |
-| Balance delay | 1 - efficiency |
-| Total idle time | m x C - T |
-| Smoothness index | sqrt( sum over i of (max_load - load_i)^2 ) |
-| Bottleneck stations | stations whose load equals the maximum load |
-| High-idle stations | stations with idle time above 20% of C |
-| Fitness (PROVISIONAL, D7) | m + smoothness_index / (m x C), lower is better |
-| Suggested workers (PROVISIONAL, D3) | m (one per station); the user may override |
-| Workload per worker | T / worker count |
+| Cycle time bounds | max(tᵢ) <= C <= Σt (both checked by input validation) |
+| Minimum stations | N_min = ceil(Σt / C) |
+| Idle time of station j | Iⱼ = C - STⱼ |
+| Utilisation of station j | Uⱼ = STⱼ / C |
+| Efficiency | E = Σt / (N x C) |
+| Balance delay | d = 1 - E = (N x C - Σt) / (N x C) |
+| Total idle time | TIT = N x C - Σt |
+| Smoothness index | SI = sqrt( sum over j of (STmax - STⱼ)^2 ) |
+| Idle-time variation (from A.1.7, not in the code yet) | LV = sqrt( sum over j of (C - STⱼ)^2 / N ) |
+| Gap to the minimum (from A.1.7, not in the code yet) | Gap = (N - N_min) / N_min |
+| Throughput rate (reference only, not computed) | 1 / C |
+| Bottleneck stations | stations whose STⱼ equals STmax |
+| High-idle stations | stations with Iⱼ above 20% of C |
+| Fitness (PROVISIONAL, D7) | F = N + SI / (N x C), lower is better |
+| Suggested workers (PROVISIONAL, D3) | N (one per station); the user may override |
+| Workload per worker | Σt / worker count |
 
-The fitness tie-breaker is always below 1, so one extra station is always worse than any smoothing gain.
+E, d, Gap and Uⱼ are stored as fractions (0.975) in the API and shown as percentages (97.5%) in the UI.
+Lower SI and LV mean a smoother balance. SI <= sqrt(N - 1) x C, so the fitness tie-breaker is always
+below 1 and one extra station is always worse than any smoothing gain.
 
 ## 6. System architecture
 
@@ -144,9 +156,11 @@ model_version, timestamps). New tables only through an Alembic migration.
 **GA (`backend/app/ga/`).** `placement.py` (U-line rule and the independent checker), `metrics.py`,
 `fitness.py`, `engine.py` (entry point `solve()`), and stubs `decoder.py`, `operators.py`, `baseline.py`.
 The current `engine.py` is a walking skeleton (valid but not optimised); the real GA replaces its body.
-Planned design: permutation chromosome, decoder using the U-line rule (feasible by construction),
-tournament selection, order crossover, swap mutation, elitism, stop on max generations or stagnation,
-fixed seed for reproducibility. Written by the integration engineer step by step; do not replace it with a library.
+The design is set in `docs/GA_DESIGN.md` (with a hand-worked 6-task example): permutation chromosome; a
+decoder that fills each station with the first eligible task (IE formulas document section 5) that fits,
+so every solution is feasible by construction; tournament selection, order crossover, swap mutation,
+elitism; stop on time limit, stagnation or max generations; fixed seed for reproducibility. Written by the
+integration engineer step by step; do not replace it with a library.
 
 **ML (`backend/app/ml/`).** `interface.py` defines `RecommendationInput`, `Recommendation` and the
 `Recommender` protocol. `rule_based.py` is the fallback and ships first. A trained model implements the same
@@ -170,7 +184,7 @@ MASTER.md            this file
 AI_RULES.md          rules every AI tool must follow in this repo
 CONTRIBUTING.md      branches, pull requests, definition of done
 contracts/           JSON schemas and examples (the contract)
-docs/                requirements PDF, decision log, ticket template
+docs/                requirements PDF, decision log, GA design note, ticket template
 backend/             FastAPI app, GA, ML, database, tests (see backend/README.md)
 frontend/            React app and mock API (see frontend/README.md)
 .github/             CI workflow and pull request template
@@ -238,6 +252,11 @@ and in another terminal `cd frontend && npm install && npm run dev`.
 
 Known gaps:
 
-- GA: the decoder, operators and baseline are stubs.
+- GA: the decoder, operators and baseline are stubs (design in `docs/GA_DESIGN.md`).
+- Metrics: idle-time variation (LV) and gap to the minimum are in section 5 but not in the code or the
+  result contract yet (task A.1.7).
+- Validation: the backend rejects a cycle time longer than the total work content; the frontend does not
+  check this yet.
+- Comparison with a straight-line baseline (IE formulas document section 10) is an open decision.
 - Frontend: no input form and no real U diagram yet.
 - Not done yet: user accounts, deployment and the Supabase connection.

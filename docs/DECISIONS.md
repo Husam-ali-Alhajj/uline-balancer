@@ -18,6 +18,9 @@ Status: **Decided**, **Provisional** (the scaffold uses this value until the mee
 | Branching | Long-lived track branches `Frontend` and `AI`, controlled and merged by the integration engineer at least weekly | Teammates are new to git and work in separate folders; teammates never merge or create branches |
 | D4 | User accounts with saved previous calculations are required (planned: Supabase Auth, owner on each run, implemented later) | Needed so a user can reopen past runs |
 | Cycle time accounts for break and down time (`break_time_per_day`) | `C = (working_time_per_day - break_time_per_day) / production_per_day` | Raw working time overstates available capacity |
+| Cycle time upper bound | Input is rejected when C > Σt (total work content) | IE formulas document section 2: max(tᵢ) <= C <= Σt |
+| Formulas and notation | MASTER.md section 5 follows the IE formulas document (latest version); LV and gap to N_min added (code in A.1.7) | One definition for code, report and IE team |
+| GA design | `docs/GA_DESIGN.md`: first-eligible-that-fits decoder, one swap per chromosome with probability `mutation_rate`, random generation 0, convergence every generation, one child per parent pair | Decided in Sprint 1 task A.1.2 |
 
 ## Provisional (implemented in the scaffold, to be confirmed)
 
@@ -35,6 +38,8 @@ Status: **Decided**, **Provisional** (the scaffold uses this value until the mee
 |---|---|
 | D6 | Special constraints (zoning, fixed tasks, parallel stations): none for the MVP? |
 | D8 | Baseline heuristic and the GA success target (set the number after the baseline exists) |
+| Straight-line baseline | IE formulas document section 10 asks to also compare against a straight-line baseline. Add it (needs a contract change), or keep only the U-line baseline? |
+| Side labels | For the IE 8-task example, `place_station` labels C and G `front`; the IE document calls them exit side. Same stations; confirm with the IE team that the "front first" labelling rule is acceptable |
 | D9 | What exactly does the ML module predict or recommend? |
 | D10 | ML training data: how it is generated and how much |
 | D12 | Where the app is deployed and who keeps it running |
