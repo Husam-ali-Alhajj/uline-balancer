@@ -18,10 +18,17 @@ class Metrics:
     smoothness_index: float
     bottleneck_stations: list[int]
     high_idle_stations: list[int]
+    idle_time_variation: float
+    gap_to_minimum: float | None = None
 
 
-def compute_metrics(cycle_time: float, loads: list[float]) -> Metrics:
-    """loads: total task time of each station, in station order."""
+def compute_metrics(
+    cycle_time: float, loads: list[float], min_stations: int | None = None
+) -> Metrics:
+    """loads: total task time of each station, in station order.
+
+    min_stations (N_min) is needed only for gap_to_minimum; without it the gap is None.
+    """
     m = len(loads)
     total_work = sum(loads)
     capacity = m * cycle_time
@@ -38,4 +45,6 @@ def compute_metrics(cycle_time: float, loads: list[float]) -> Metrics:
         high_idle_stations=[
             i for i, value in enumerate(idle, 1) if value > HIGH_IDLE_FRACTION * cycle_time + EPS
         ],
+        idle_time_variation=round(math.sqrt(sum(value**2 for value in idle) / m), 4),
+        gap_to_minimum=None if min_stations is None else round((m - min_stations) / min_stations, 4),
     )

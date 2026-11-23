@@ -1,0 +1,70 @@
+{
+  "title": "Eight-task example (IE formulas document, section 8)",
+  "tasks": [
+    {
+      "name": "A",
+      "time": 7.0,
+      "predecessors": []
+    },
+    {
+      "name": "B",
+      "time": 4.0,
+      "predecessors": [
+        "A"
+      ]
+    },
+    {
+      "name": "C",
+      "time": 6.0,
+      "predecessors": [
+        "B"
+      ]
+    },
+    {
+      "name": "D",
+      "time": 3.0,
+      "predecessors": [
+        "C"
+      ]
+    },
+    {
+      "name": "E",
+      "time": 6.0,
+      "predecessors": []
+    },
+    {
+      "name": "F",
+      "time": 4.0,
+      "predecessors": [
+        "E"
+      ]
+    },
+    {
+      "name": "G",
+      "time": 5.0,
+      "predecessors": [
+        "F"
+      ]
+    },
+    {
+      "name": "H",
+      "time": 4.0,
+      "predecessors": [
+        "G"
+      ]
+    }
+  ],
+  "working_time_per_day": 480.0,
+  "break_time_per_day": 0,
+  "production_per_day": 48,
+  "ga_settings": {
+    "population_size": 50,
+    "max_generations": 100,
+    "crossover_rate": 0.8,
+    "mutation_rate": 0.1,
+    "elitism_count": 2,
+    "tournament_size": 3,
+    "stagnation_limit": 30,
+    "seed": 42
+  }
+}

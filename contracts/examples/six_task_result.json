@@ -78,7 +78,9 @@
       "count": 3,
       "suggested": 3,
       "workload_per_worker": 7.6667
-    }
+    },
+    "idle_time_variation": 0.5774,
+    "gap_to_minimum": 0.0
   },
   "ga": {
     "seed": 42,

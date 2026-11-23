@@ -10,6 +10,7 @@ The agreement between the backend, the frontend and the ML module.
 | `examples/six_task_input.json` | worked example input (6 tasks, cycle time 8) |
 | `examples/six_task_result.json` | the matching result (3 stations, efficiency 95.8%) |
 | `examples/six_task_run_status_succeeded.json` | a full `GET /runs/{id}` response |
+| `examples/eight_task_input.json` | IE formulas document example, section 8 (8 tasks, cycle time 10; expected 4 stations, efficiency 97.5%) |
 
 **Do not edit these files on your own.** Only the integration engineer changes contracts, together with the Pydantic models
 (`backend/app/schemas/`), the example files and the frontend mocks (`frontend/src/mocks/`), in one reviewed pull request.

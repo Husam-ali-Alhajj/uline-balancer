@@ -61,7 +61,7 @@ def solve_problem(
         )
 
     m = len(stations)
-    metrics = compute_metrics(cycle, loads)
+    metrics = compute_metrics(cycle, loads, summary.min_stations)
     total = summary.total_work_content
     workers_count = problem.workers or m
 
@@ -98,6 +98,8 @@ def solve_problem(
                 suggested=m,
                 workload_per_worker=round(total / workers_count, 4),
             ),
+            idle_time_variation=metrics.idle_time_variation,
+            gap_to_minimum=metrics.gap_to_minimum,
         ),
         ga=r.GARunInfo(
             seed=outcome.seed,
