@@ -13,7 +13,9 @@ def load_example(name: str) -> dict:
 
 
 def instance_from_input(data: dict) -> Instance:
-    cycle = data["working_time_per_day"] / data["production_per_day"]
+    # MASTER.md section 5: C = (working time - break time) / production
+    available = data["working_time_per_day"] - data.get("break_time_per_day", 0)
+    cycle = available / data["production_per_day"]
     return Instance(
         times={t["name"]: float(t["time"]) for t in data["tasks"]},
         predecessors={t["name"]: tuple(t.get("predecessors", [])) for t in data["tasks"]},

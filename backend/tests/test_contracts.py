@@ -76,3 +76,10 @@ def test_example_recommendations_match_rule_based_output():
     )
     codes = [r.code for r in RuleBasedRecommender().recommend(rec_input)]
     assert codes == [r["code"] for r in result["recommendations"]]
+
+
+def test_helper_cycle_time_uses_break_time_and_matches_pydantic():
+    data = load_example("six_task_with_breaks_input.json")
+    instance = instance_from_input(data)
+    assert round(instance.cycle_time, 4) == 7.3333
+    assert instance.cycle_time == ProblemInput.model_validate(data).cycle_time
