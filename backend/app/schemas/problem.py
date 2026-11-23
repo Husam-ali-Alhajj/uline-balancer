@@ -2,7 +2,8 @@
 
 from __future__ import annotations
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
+from pydantic import BaseModel, ConfigDict, Field, ValidationError, field_validator, model_validator
+from pydantic_core import InitErrorDetails, PydanticCustomError
 
 MAX_TASKS = 50  # decision D2 (suggested value); change here and in the JSON schema
 EPS = 1e-9
@@ -30,10 +31,36 @@ class GASettings(BaseModel):
     max_generations: int = Field(default=100, ge=10, le=1000)
     crossover_rate: float = Field(default=0.8, ge=0, le=1)
     mutation_rate: float = Field(default=0.1, ge=0, le=1)
-    elitism_count: int = Field(default=2, ge=0)
-    tournament_size: int = Field(default=3, ge=2)
+    elitism_count: int = Field(default=2, ge=0, le=20)
+    tournament_size: int = Field(default=3, ge=2, le=20)
     stagnation_limit: int = Field(default=30, ge=1)
     seed: int | None = Field(default=None, ge=0)
+
+    @model_validator(mode="after")
+    def _fit_population(self) -> GASettings:
+        """tournament_size <= population_size and elitism_count < population_size.
+
+        Errors are raised per field, so the API reports ga_settings.tournament_size or
+        ga_settings.elitism_count in the standard error format.
+        """
+        errors = []
+        if self.tournament_size > self.population_size:
+            errors.append(("tournament_size", self.tournament_size,
+                           f"must not be larger than population_size ({self.population_size})"))
+        if self.elitism_count >= self.population_size:
+            errors.append(("elitism_count", self.elitism_count,
+                           f"must be smaller than population_size ({self.population_size})"))
+        if errors:
+            raise ValidationError.from_exception_data(
+                "GASettings",
+                [
+                    InitErrorDetails(
+                        type=PydanticCustomError("value_error", message), loc=(field,), input=value
+                    )
+                    for field, value, message in errors
+                ],
+            )
+        return self
 
 
 class ProblemInput(BaseModel):

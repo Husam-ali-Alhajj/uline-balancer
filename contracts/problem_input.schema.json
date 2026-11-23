@@ -41,8 +41,8 @@
         "max_generations": { "type": "integer", "minimum": 10, "maximum": 1000, "default": 100 },
         "crossover_rate": { "type": "number", "minimum": 0, "maximum": 1, "default": 0.8 },
         "mutation_rate": { "type": "number", "minimum": 0, "maximum": 1, "default": 0.1 },
-        "elitism_count": { "type": "integer", "minimum": 0, "default": 2 },
-        "tournament_size": { "type": "integer", "minimum": 2, "default": 3 },
+        "elitism_count": { "type": "integer", "minimum": 0, "maximum": 20, "default": 2, "description": "Best chromosomes copied unchanged. Must also be smaller than population_size (checked by the backend)." },
+        "tournament_size": { "type": "integer", "minimum": 2, "maximum": 20, "default": 3, "description": "Chromosomes per tournament. Must also be at most population_size (checked by the backend)." },
         "stagnation_limit": { "type": "integer", "minimum": 1, "default": 30, "description": "Stop after this many generations without improvement." },
         "seed": { "type": ["integer", "null"], "minimum": 0, "description": "Same input + same seed = same result." }
       }

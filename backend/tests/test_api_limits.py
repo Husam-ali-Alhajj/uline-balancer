@@ -2,6 +2,8 @@
 
 import pytest
 
+from app.schemas.problem import GASettings
+
 
 def _task(name, time, predecessors=()):
     return {"name": name, "time": time, "predecessors": list(predecessors)}
@@ -32,3 +34,33 @@ def test_rejected_with_standard_error(client, case):
     assert body["error"]["code"] == "validation_error"
     assert body["error"]["details"]
     assert "Traceback" not in response.text and 'File "' not in response.text
+
+
+GA_SETTINGS_REJECTED = {
+    "tournament_size above 20": ({"tournament_size": 21}, ["ga_settings.tournament_size"]),
+    "elitism_count above 20": ({"elitism_count": 21}, ["ga_settings.elitism_count"]),
+    "tournament_size above population_size": (
+        {"population_size": 10, "tournament_size": 11}, ["ga_settings.tournament_size"]),
+    "elitism_count equal to population_size": (
+        {"population_size": 10, "elitism_count": 10}, ["ga_settings.elitism_count"]),
+    "both cross-field rules broken": (
+        {"population_size": 10, "tournament_size": 15, "elitism_count": 12},
+        ["ga_settings.tournament_size", "ga_settings.elitism_count"]),
+}
+
+
+@pytest.mark.parametrize("case", GA_SETTINGS_REJECTED)
+def test_ga_settings_rejected_per_field(client, case):
+    settings, fields = GA_SETTINGS_REJECTED[case]
+    body = _body([_task("A", 2), _task("B", 3, ["A"])], working=50)
+    body["ga_settings"] = settings
+    response = client.post("/runs", json=body)
+    assert response.status_code == 422
+    error = response.json()["error"]
+    assert error["code"] == "validation_error"
+    assert [d["field"] for d in error["details"]] == fields
+
+
+def test_ga_settings_at_the_limits_are_accepted():
+    GASettings(population_size=20, tournament_size=20, elitism_count=19)
+    GASettings(population_size=500, tournament_size=20, elitism_count=20)
