@@ -61,9 +61,6 @@ Files in `contracts/` can only be changed by the integration engineer (see secti
 Given tasks, precedence and a cycle time C: use as **few stations as possible** so that no station's
 total task time exceeds C and the U-line rule holds. Secondary goal: workloads as even as possible.
 
-hcjajdihriofwhaisfhiaehfihrrihfiohrofho
-
-
 **Inputs** (`contracts/problem_input.schema.json`): tasks (1 to 50), working time per day, break and down
 time per day (zero or more, below the working time), production per day, optional worker count, optional
 GA settings and seed.
@@ -103,8 +100,8 @@ STⱼ = station time of station j (sum of its task times), STmax = the largest S
 | Balance delay | d = 1 - E = (N x C - Σt) / (N x C) |
 | Total idle time | TIT = N x C - Σt |
 | Smoothness index | SI = sqrt( sum over j of (STmax - STⱼ)^2 ) |
-| Idle-time variation (from A.1.7, not in the code yet) | LV = sqrt( sum over j of (C - STⱼ)^2 / N ) |
-| Gap to the minimum (from A.1.7, not in the code yet) | Gap = (N - N_min) / N_min |
+| Idle-time variation | LV = sqrt( sum over j of (C - STⱼ)^2 / N ) |
+| Gap to the minimum | Gap = (N - N_min) / N_min |
 | Throughput rate (reference only, not computed) | 1 / C |
 | Bottleneck stations | stations whose STⱼ equals STmax |
 | High-idle stations | stations with Iⱼ above 20% of C |
@@ -157,9 +154,8 @@ model_version, timestamps). New tables only through an Alembic migration.
 ## 7. Modules and contracts
 
 **GA (`backend/app/ga/`).** `placement.py` (U-line rule and the independent checker), `metrics.py`,
-`fitness.py`, `engine.py` (entry point `solve()`), and stubs `decoder.py`, `operators.py`, `baseline.py`.
-The current `engine.py` is a walking skeleton (valid but not optimised); the real GA replaces its body.
-The design is set in `docs/GA_DESIGN.md` (with a hand-worked 6-task example): permutation chromosome; a
+`fitness.py`, `decoder.py`, `operators.py`, `engine.py` (entry point `solve()`, the GA loop), and the
+stub `baseline.py` (Track C). The design is set in `docs/GA_DESIGN.md` (with a hand-worked 6-task example): permutation chromosome; a
 decoder that fills each station with the first eligible task (IE formulas document section 5) that fits,
 so every solution is feasible by construction; tournament selection, order crossover, swap mutation,
 elitism; stop on time limit, stagnation or max generations; fixed seed for reproducibility. Written by the
@@ -174,6 +170,7 @@ never blocks a result). Every recommendation names the metric that triggered it.
 **Contracts (`contracts/`).** JSON Schemas and examples are the agreement between all tracks:
 - `problem_input.schema.json`, `run_result.schema.json`, `run_status.schema.json`
 - `examples/six_task_*.json`: a worked 6-task example (A to F, cycle time 8, 3 stations)
+- `examples/eight_task_input.json`: the IE formulas document example, section 8 (cycle time 10, 4 stations)
 
 The backend Pydantic models (`app/schemas/`) must match the schemas, and the tests check that the examples
 satisfy both. The frontend mock API (MSW) is built from the same examples. **Contract changes** go through
@@ -255,9 +252,9 @@ and in another terminal `cd frontend && npm install && npm run dev`.
 
 Known gaps:
 
-- GA: the decoder, operators and baseline are stubs (design in `docs/GA_DESIGN.md`).
-- Metrics: idle-time variation (LV) and gap to the minimum are in section 5 but not in the code or the
-  result contract yet (task A.1.7).
+- GA: the real GA runs behind the API (Sprint 1, Track A). The baseline is still a stub (task C.1.2).
+- GA performance: with the largest allowed settings (population 500, 1000 generations) a 50-task run uses
+  the full 60 s time limit; the defaults finish in under 2 s.
 - Validation: the backend rejects a cycle time longer than the total work content; the frontend does not
   check this yet.
 - Comparison with a straight-line baseline (IE formulas document section 10) is an open decision.
