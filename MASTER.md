@@ -253,8 +253,14 @@ and in another terminal `cd frontend && npm install && npm run dev`.
 Known gaps:
 
 - GA: the real GA runs behind the API (Sprint 1, Track A). The baseline is still a stub (task C.1.2).
-- GA performance: with the largest allowed settings (population 500, 1000 generations) a 50-task run uses
-  the full 60 s time limit; the defaults finish in under 2 s.
+- GA performance (Sprint 1 measurement, 50 tasks, 3 seeds per graph shape): the defaults finish in under
+  1 s. With the largest population and generation settings (500 and 1000) and the default
+  stagnation limit (30), a run takes 4 to 21 s and stops on stagnation. It reaches the 60 s time limit
+  only when `stagnation_limit` is raised as well (tested with 1000).
+- GA quality: with the default settings, 50-task chains end 2 to 3 stations above N_min (mixed graphs 1,
+  wide graphs 0). The largest settings bring chains to 1 above N_min.
+- GA memory: the fitness cache is unbounded. One run with the largest settings and a raised stagnation
+  limit used up to 126 MB (49 MB with the default stagnation limit).
 - Validation: the backend rejects a cycle time longer than the total work content; the frontend does not
   check this yet.
 - Comparison with a straight-line baseline (IE formulas document section 10) is an open decision.
