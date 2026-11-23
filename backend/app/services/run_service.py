@@ -7,7 +7,7 @@ import time
 import uuid
 from datetime import UTC, datetime
 
-from sqlalchemy import func, select, update
+from sqlalchemy import func, null, select, update
 from sqlalchemy.orm import Session
 
 from app.db.models import Run
@@ -122,14 +122,24 @@ def delete_run(session: Session, run: Run) -> None:
 # ---- worker side: runs in a separate process (or inline in tests) ----------------
 
 
-def _fail(run_id: uuid.UUID, code: str, message: str) -> None:
+def _update_if_status(run_id: uuid.UUID, expected: str, **values: object) -> bool:
+    """Update the run only while it still has status `expected`. Returns False if it did not.
+
+    A worker can outlive the server that started it; by then the restarted server has marked
+    the run failed (server_restarted), and the worker must not overwrite that.
+    """
     with SessionLocal() as session:
-        run = session.get(Run, run_id)
-        if run is not None:
-            run.status = "failed"
-            run.error = {"code": code, "message": message}
-            run.finished_at = _now()
-            session.commit()
+        outcome = session.execute(
+            update(Run).where(Run.id == run_id, Run.status == expected).values(**values)
+        )
+        session.commit()
+        return outcome.rowcount == 1
+
+
+def _fail(run_id: uuid.UUID, code: str, message: str) -> None:
+    error = {"code": code, "message": message}
+    if not _update_if_status(run_id, "running", status="failed", error=error, finished_at=_now()):
+        logger.warning("run %s is no longer running; discarding its error %s", run_id, code)
 
 
 def execute_run(run_id: str) -> None:
@@ -138,10 +148,11 @@ def execute_run(run_id: str) -> None:
         run = session.get(Run, key)
         if run is None:
             return
-        run.status = "running"
-        run.started_at = _now()
-        session.commit()
-        problem = ProblemInput.model_validate(run.input)
+        data = run.input
+    if not _update_if_status(key, "queued", status="running", started_at=_now()):
+        logger.warning("run %s is no longer queued; not starting it", run_id)
+        return
+    problem = ProblemInput.model_validate(data)
 
     last_write = 0.0
 
@@ -151,12 +162,9 @@ def execute_run(run_id: str) -> None:
         if now - last_write < 1.0 and generation < max_generations:
             return
         last_write = now
-        with SessionLocal() as ps:
-            row = ps.get(Run, key)
-            if row is not None:
-                row.progress_generation = generation
-                row.progress_max = max_generations
-                ps.commit()
+        _update_if_status(
+            key, "running", progress_generation=generation, progress_max=max_generations
+        )
 
     try:
         result = solve_problem(problem, progress)
@@ -168,11 +176,14 @@ def execute_run(run_id: str) -> None:
         _fail(key, "internal_error", "The run failed unexpectedly. Please try again.")
         return
 
-    with SessionLocal() as session:
-        run = session.get(Run, key)
-        if run is not None:
-            run.status = "succeeded"
-            run.result = result.model_dump(mode="json")
-            run.model_version = result.model_version
-            run.finished_at = _now()
-            session.commit()
+    stored = _update_if_status(
+        key,
+        "running",
+        status="succeeded",
+        result=result.model_dump(mode="json"),
+        model_version=result.model_version,
+        error=null(),
+        finished_at=_now(),
+    )
+    if not stored:
+        logger.warning("run %s was marked failed while it ran; discarding its result", run_id)
