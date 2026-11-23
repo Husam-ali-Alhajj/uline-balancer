@@ -1,4 +1,4 @@
-Opened by the integration engineer when integrating a track branch (`Frontend` or `AI`) into `develop`.
+Opened by the integration engineer when integrating a track branch (`Frontend` or `AI`) into `main`.
 Track A works directly on `main` and needs no pull request.
 
 ## What does this change?
@@ -13,6 +13,6 @@ Track A works directly on `main` and needs no pull request.
 - [ ] No secrets, `.env`, databases or generated files committed
 - [ ] Tests added or updated (backend logic)
 - [ ] I read the diff myself, including any AI-generated code
-- [ ] Pull request targets `develop`
+- [ ] Pull request targets `main`
 
 ## Questions or risks for the reviewer

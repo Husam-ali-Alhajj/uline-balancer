@@ -20,7 +20,7 @@ If you are a human: paste "Read MASTER.md and AI_RULES.md first" into your first
 - Edit a database migration that is already merged, or change tables outside Alembic. Add a new migration instead.
 - Edit `.github/`, `.gitignore`, `MASTER.md`, `AI_RULES.md` or `CONTRIBUTING.md`.
 - Run destructive commands: `git push --force`, `git reset --hard`, `git clean -fd`, `rm -rf`, dropping tables, deleting branches.
-- Commit to `main` or `develop`, or create, switch, delete, merge, rebase or force-push any branch.
+- Commit to `main`, or create, switch, delete, merge, rebase or force-push any branch.
   Exception: Track A (the integration engineer) works directly on `main`.
 - Add Docker, Celery, Redis, a new framework, a new language, or any tool listed as "deliberately NOT used" in MASTER.md.
 

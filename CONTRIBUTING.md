@@ -1,14 +1,13 @@
 # Contributing
 
 Short version: teammates work on their own long-lived branch; the integration engineer reviews and merges everything into
-`develop`. Read `MASTER.md` first and `AI_RULES.md` if you use any AI tool.
+`main`. Read `MASTER.md` first and `AI_RULES.md` if you use any AI tool.
 
 ## Branches
 
 | Branch | Purpose | Who writes to it |
 |---|---|---|
-| `main` | Track A work (backend, GA, contracts; an exception to the branch model) and releases, tagged at the end of each sprint (`sprint-1`, `sprint-2`, ...) | integration engineer only, committing directly |
-| `develop` | integration branch; **default branch on GitHub** | the integration engineer only |
+| `main` | integration branch and **default branch on GitHub**; Track A work (backend, GA, contracts) is committed here directly; tagged at the end of each sprint (`sprint-1`, `sprint-2`, ...) | integration engineer only |
 | `Frontend` | long-lived branch for the frontend engineer | the frontend engineer only |
 | `AI` | long-lived branch for the AI engineer | the AI engineer only |
 
@@ -20,10 +19,10 @@ anything unclear, stop and ask the integration engineer instead of resolving it 
 
 At least once a week, and whenever a ticket is done:
 
-1. Check the branch: tests pass, the diff is clean. A pull request from the track branch into `develop`, opened by
-   the integration engineer, is the preferred way to review it and run CI.
-2. Merge it into `develop`.
-3. Merge `develop` back into the track branch, so the teammate gets the latest contracts and code.
+1. Check the branch: tests pass, the diff is clean. A pull request from the track branch (`Frontend` or `AI`) into
+   `main`, opened by the integration engineer, is the preferred way to review it and run CI.
+2. Merge it into `main`.
+3. Merge `main` back into the track branch, so the teammate gets the latest contracts and code.
 4. Tell the teammate to press "Sync Changes".
 
 A track branch must never go more than 7 days without this routine. Merge conflicts are resolved by the integration
@@ -41,7 +40,7 @@ engineer only.
 - [ ] Frontend: `npm run build` passes and the change was tried in the browser
 - [ ] No secrets, no `.env`, no generated files committed
 - [ ] Docs updated if behaviour or setup changed (README or MASTER.md, via the integration engineer)
-- [ ] Integration: a pull request was opened into `develop`, the template filled in, reviewed and merged by the
+- [ ] Integration: a pull request was opened into `main` (Track A commits to `main` directly), the template filled in, reviewed and merged by the
   integration engineer
 
 ## Tickets
@@ -51,9 +50,8 @@ done-criteria. If a ticket is unclear, ask before starting.
 
 ## One-time GitHub setup (integration engineer)
 
-1. Push all branches. In Settings > General set the default branch to `develop`.
-2. Settings > Branches: protect `develop` (require a pull request, require the `backend` status check to pass, block
-   force pushes) and `main` (block force pushes and deletion only, no pull request required, because Track A commits
-   to it directly). Do not add protection rules for `Frontend` or `AI`.
+1. Push all branches. In Settings > General set the default branch to `main`.
+2. Settings > Branches: protect `main` only: block force pushes and deletion. Do not require a pull request, because
+   Track A commits to `main` directly. Do not add protection rules for `Frontend` or `AI`.
 3. Settings > General: allow squash merging, enable "Automatically delete head branches".
 4. Add the team as collaborators. Never share the Supabase key in chat or in the repo; share it privately.

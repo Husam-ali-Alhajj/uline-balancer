@@ -23,4 +23,4 @@
 **Notes / links:**
 
 Branch: your track's branch (`Frontend`, `AI`, or `main` for Track A); do not create new branches. The integration
-engineer integrates `Frontend` and `AI` into `develop` through a pull request; Track A commits directly to `main`.
+engineer integrates `Frontend` and `AI` into `main` through a pull request; Track A commits directly to `main`.
