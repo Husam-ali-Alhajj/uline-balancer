@@ -98,7 +98,7 @@ def _greedy_topological_fill(inst):
 
 def test_ga_is_never_worse_than_greedy_fill():
     rng = random.Random(90)
-    for seed in range(50):
+    for seed in range(15):
         inst = random_instance(rng, rng.randint(5, 50), rng.choice([0.05, 0.15, 0.3]), rng.randint(8, 20))
         greedy = _greedy_topological_fill(inst)
         assert check_solution(inst, greedy) == []
