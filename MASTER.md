@@ -37,7 +37,7 @@ User accounts with saved calculations are planned (Supabase Auth); not built yet
 
 Ownership means "you change it". Changing a file outside your folder needs the integration engineer's approval.
 
-Branches: `Frontend` (frontend engineer), `AI` (AI engineer), `feature/*` (integration engineer). The integration engineer merges
+Branches: `Frontend` (frontend engineer), `AI` (AI engineer), `main` (integration engineer, Track A, as an exception). The integration engineer merges
 everything; see CONTRIBUTING.md.
 
 Files in `contracts/` can only be changed by the integration engineer (see section 7).

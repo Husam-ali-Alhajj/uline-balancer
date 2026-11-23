@@ -22,4 +22,5 @@
 
 **Notes / links:**
 
-Branch name: `feature/<track>-<short-name>` from `develop`. Pull request into `develop`.
+Branch: your track's branch (`Frontend`, `AI`, or `main` for Track A); do not create new branches. The integration
+engineer integrates `Frontend` and `AI` into `develop` through a pull request; Track A commits directly to `main`.

@@ -7,11 +7,10 @@ Short version: teammates work on their own long-lived branch; the integration en
 
 | Branch | Purpose | Who writes to it |
 |---|---|---|
-| `main` | stable releases, tagged at the end of each sprint (`sprint-1`, `sprint-2`, ...) | integration engineer only, by merging `develop` |
+| `main` | Track A work (backend, GA, contracts; an exception to the branch model) and releases, tagged at the end of each sprint (`sprint-1`, `sprint-2`, ...) | integration engineer only, committing directly |
 | `develop` | integration branch; **default branch on GitHub** | the integration engineer only |
 | `Frontend` | long-lived branch for the frontend engineer | the frontend engineer only |
 | `AI` | long-lived branch for the AI engineer | the AI engineer only |
-| `feature/<name>` | the integration engineer's own task branches, e.g. `feature/ga-core` | the integration engineer only |
 
 Teammates work only on their own branch, and only in their own folders (see MASTER.md section 2). They never create,
 switch, delete, merge or rebase branches — if you're unsure which branch you're on, or git shows a conflict or
@@ -53,7 +52,8 @@ done-criteria. If a ticket is unclear, ask before starting.
 ## One-time GitHub setup (integration engineer)
 
 1. Push all branches. In Settings > General set the default branch to `develop`.
-2. Settings > Branches: add protection rules for `main` and `develop` only: require a pull request, require the
-   `backend` status check to pass, block force pushes. Do not add protection rules for `Frontend` or `AI`.
+2. Settings > Branches: protect `develop` (require a pull request, require the `backend` status check to pass, block
+   force pushes) and `main` (block force pushes and deletion only, no pull request required, because Track A commits
+   to it directly). Do not add protection rules for `Frontend` or `AI`.
 3. Settings > General: allow squash merging, enable "Automatically delete head branches".
 4. Add the team as collaborators. Never share the Supabase key in chat or in the repo; share it privately.

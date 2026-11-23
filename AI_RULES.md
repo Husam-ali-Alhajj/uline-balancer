@@ -21,6 +21,7 @@ If you are a human: paste "Read MASTER.md and AI_RULES.md first" into your first
 - Edit `.github/`, `.gitignore`, `MASTER.md`, `AI_RULES.md` or `CONTRIBUTING.md`.
 - Run destructive commands: `git push --force`, `git reset --hard`, `git clean -fd`, `rm -rf`, dropping tables, deleting branches.
 - Commit to `main` or `develop`, or create, switch, delete, merge, rebase or force-push any branch.
+  Exception: Track A (the integration engineer) works directly on `main`.
 - Add Docker, Celery, Redis, a new framework, a new language, or any tool listed as "deliberately NOT used" in MASTER.md.
 
 ## 3. Security (non-negotiable)
@@ -61,8 +62,8 @@ If you are a human: paste "Read MASTER.md and AI_RULES.md first" into your first
 
 ## 6. Git rules
 
-- Work only on the branch you are on, which is the assigned branch of your track (`Frontend`, `AI`, or the integration
-  engineer's `feature/*`). If you are on a different branch, stop and tell the human.
+- Work only on the branch you are on, which is the assigned branch of your track (`Frontend`, `AI`, or `main` for
+  Track A, the integration engineer). If you are on a different branch, stop and tell the human.
 - Never commit on your own. Commit only when the developer explicitly asks you to; until then, leave your changes
   uncommitted for the developer to review. A request to commit covers that one commit only, not later ones.
 - When asked to commit, keep commits small, with short imperative messages ("Add station table component"), one idea

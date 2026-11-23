@@ -1,4 +1,5 @@
-Opened by the integration engineer when integrating a track branch or a feature branch into `develop`.
+Opened by the integration engineer when integrating a track branch (`Frontend` or `AI`) into `develop`.
+Track A works directly on `main` and needs no pull request.
 
 ## What does this change?
 <!-- One or two sentences. Link the ticket. -->
