@@ -49,6 +49,8 @@ class Metrics(BaseModel):
     bottleneck_stations: list[int]
     high_idle_stations: list[int]
     workers: WorkersInfo
+    idle_time_variation: float | None = None
+    gap_to_minimum: float | None = None
 
 
 class ConvergencePoint(BaseModel):

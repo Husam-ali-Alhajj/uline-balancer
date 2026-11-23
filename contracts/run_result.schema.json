@@ -76,7 +76,9 @@
             "suggested": { "type": "integer", "minimum": 1, "description": "PROVISIONAL (D3): one worker per station." },
             "workload_per_worker": { "type": "number", "description": "total_work / count (minutes)." }
           }
-        }
+        },
+        "idle_time_variation": { "type": "number", "minimum": 0, "description": "Optional. LV = sqrt(sum((cycle_time - load_i)^2) / stations). Lower is smoother." },
+        "gap_to_minimum": { "type": "number", "minimum": 0, "description": "Optional. (stations - min_stations) / min_stations, as a fraction (0.25 = 25%)." }
       }
     },
     "ga": {

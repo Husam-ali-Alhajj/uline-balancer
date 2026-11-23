@@ -1,4 +1,4 @@
-"""Tests for the pure GA modules: placement rule, checker, metrics, fitness, skeleton engine."""
+"""Tests for the pure GA modules: placement rule, checker, metrics, fitness, engine."""
 
 from helpers import instance_from_input, load_example
 
@@ -63,7 +63,7 @@ def test_fitness_never_lets_smoothness_outweigh_a_station():
     assert worst_three < best_four
 
 
-def test_skeleton_engine_returns_feasible_solution():
+def test_engine_returns_feasible_solution():
     inst = _inst()
     outcome = solve(inst, {"max_generations": 100}, seed=7)
     names = [[p.name for p in station] for station in outcome.stations]
@@ -71,7 +71,7 @@ def test_skeleton_engine_returns_feasible_solution():
     assert outcome.seed == 7
 
 
-def test_skeleton_engine_is_reproducible():
+def test_engine_is_reproducible():
     inst = _inst()
     a = solve(inst, {}, seed=1)
     b = solve(inst, {}, seed=1)

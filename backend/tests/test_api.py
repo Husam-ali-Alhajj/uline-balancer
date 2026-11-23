@@ -54,6 +54,9 @@ def test_run_lifecycle(client):
 
     stations = [[t["name"] for t in s["tasks"]] for s in status["result"]["solution"]["stations"]]
     assert check_solution(instance_from_input(_body()), stations) == []
+    assert status["result"]["solution"]["num_stations"] == 3
+    assert status["result"]["ga"]["generations_run"] > 0
+    assert status["result"]["ga"]["stop_reason"] in ("max_generations", "stagnation")
 
     listed = client.get("/runs").json()
     assert any(item["run_id"] == run_id for item in listed)
