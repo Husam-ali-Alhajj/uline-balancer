@@ -28,6 +28,18 @@ Stay on your branch forever. You should never need to switch again.
 
 Do step 5 at the end of every session, so your work is never only on your own machine.
 
+## How work moves between branches
+
+The repository has three branches: `main` (the shared version), `Frontend` and `AI`.
+
+1. Each teammate commits and syncs only on their own branch.
+2. The integration engineer checks that branch and merges it into `main`.
+3. The integration engineer then merges `main` back into the teammate's branch, which brings in the other
+   tracks' work and any contract changes.
+4. The teammate receives it with **Sync Changes** at the start of the next session.
+
+Only the integration engineer merges, creates or deletes branches. This happens at least once a week.
+
 ## Using AI tools
 
 - Start every session by telling the AI: "Read MASTER.md and AI_RULES.md first, I am on branch `<name>`."
@@ -35,7 +47,7 @@ Do step 5 at the end of every session, so your work is never only on your own ma
 
 ## Never do this
 
-- Switch or create branches
+- Switch, create or delete branches
 - Merge or rebase
 - Click "Force Push"
 - Click "Reset" (on a commit, a branch, or anything else)

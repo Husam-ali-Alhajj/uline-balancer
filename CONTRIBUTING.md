@@ -11,7 +11,8 @@ Short version: teammates work on their own long-lived branch; the integration en
 | `Frontend` | long-lived branch for the frontend engineer | the frontend engineer only |
 | `AI` | long-lived branch for the AI engineer | the AI engineer only |
 
-Teammates work only on their own branch, and only in their own folders (see MASTER.md section 2). They never create,
+Teammates work only on their own branch, and only in their own folders (see MASTER.md section 2). They press
+"Sync Changes" (pull) before starting each session, so they work on top of the latest merge. They never create,
 switch, delete, merge or rebase branches — if you're unsure which branch you're on, or git shows a conflict or
 anything unclear, stop and ask the integration engineer instead of resolving it yourself. The integration engineer does all merging.
 
@@ -51,7 +52,8 @@ done-criteria. If a ticket is unclear, ask before starting.
 ## One-time GitHub setup (integration engineer)
 
 1. Push all branches. In Settings > General set the default branch to `main`.
-2. Settings > Branches: protect `main` only: block force pushes and deletion. Do not require a pull request, because
-   Track A commits to `main` directly. Do not add protection rules for `Frontend` or `AI`.
+2. Settings > Branches: protect `main` only: block force pushes and deletion, and apply the rule to administrators
+   too. Do not require a pull request, because Track A commits to `main` directly. Do not add protection rules for
+   `Frontend` or `AI`.
 3. Settings > General: allow squash merging, enable "Automatically delete head branches".
 4. Add the team as collaborators. Never share the Supabase key in chat or in the repo; share it privately.
