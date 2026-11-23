@@ -22,6 +22,18 @@ from collections.abc import Iterable
 from .types import EPS, Instance, Placement
 
 
+def is_eligible(
+    instance: Instance, name: str, done: set[str], succ: dict[str, tuple[str, ...]]
+) -> str | None:
+    """The U-line rule for one task: 'front' if all its predecessors are in `done`, else 'back'
+    if all its successors are in `done`, else None. `succ` is instance.successors()."""
+    if all(p in done for p in instance.predecessors[name]):
+        return "front"
+    if all(s in done for s in succ[name]):
+        return "back"
+    return None
+
+
 def place_station(
     instance: Instance, station_tasks: Iterable[str], assigned: set[str]
 ) -> list[Placement] | None:
@@ -38,15 +50,16 @@ def place_station(
     while remaining:
         progressed = False
         for name in list(remaining):
-            if all(p in done for p in instance.predecessors[name]):
+            if is_eligible(instance, name, done, succ) == "front":
                 placed.append(Placement(name, "front"))
                 done.add(name)
                 remaining.remove(name)
                 progressed = True
         if progressed:
             continue
+        # no task is front-eligible here, so is_eligible can only return "back" or None
         for name in remaining:
-            if all(s in done for s in succ[name]):
+            if is_eligible(instance, name, done, succ) == "back":
                 placed.append(Placement(name, "back"))
                 done.add(name)
                 remaining.remove(name)

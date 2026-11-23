@@ -5,15 +5,15 @@ repeatedly add the first unassigned task in chromosome order that is eligible (a
 all successors already assigned, counting the current station) and fits in the remaining time.
 Close the station when no eligible task fits, and open the next one.
 
-Every decoded solution is feasible by construction; place_station orders each station and is the
-only place where the U-line rule is applied to a finished station.
+Every decoded solution is feasible by construction. The U-line rule itself lives only in
+placement.py: is_eligible decides which tasks may be added, and place_station orders each station.
 """
 
 from __future__ import annotations
 
 from collections.abc import Sequence
 
-from .placement import place_station
+from .placement import is_eligible, place_station
 from .types import EPS, Instance
 
 
@@ -36,9 +36,7 @@ def decode(instance: Instance, chromosome: Sequence[str]) -> list[list[str]]:
             for name in chromosome:
                 if name in assigned or instance.times[name] > remaining + EPS:
                     continue
-                if all(p in assigned for p in instance.predecessors[name]) or all(
-                    s in assigned for s in succ[name]
-                ):
+                if is_eligible(instance, name, assigned, succ) is not None:
                     group.append(name)
                     assigned.add(name)
                     remaining -= instance.times[name]

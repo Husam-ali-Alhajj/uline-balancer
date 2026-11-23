@@ -6,7 +6,7 @@ import pytest
 from helpers import instance_from_input, load_example, make_instance, random_instance
 
 from app.ga.decoder import decode
-from app.ga.placement import check_solution
+from app.ga.placement import check_solution, is_eligible
 
 
 def _shuffled(rng, items):
@@ -72,3 +72,13 @@ def test_float_times_fit_with_eps():
     stations = decode(inst, ["A", "B"])
     assert stations == [["A", "B"]]
     assert check_solution(inst, stations) == []
+
+
+def test_is_eligible_front_back_and_none():
+    inst = instance_from_input(load_example("six_task_input.json"))
+    succ = inst.successors()
+    assert is_eligible(inst, "A", set(), succ) == "front"  # no predecessors
+    assert is_eligible(inst, "F", set(), succ) == "back"  # no successors, predecessors not done
+    assert is_eligible(inst, "D", set(), succ) is None
+    assert is_eligible(inst, "D", {"A", "B", "C"}, succ) == "front"
+    assert is_eligible(inst, "E", {"F"}, succ) == "back"
