@@ -22,3 +22,24 @@ def instance_from_input(data: dict) -> Instance:
         cycle_time=cycle,
         order=tuple(t["name"] for t in data["tasks"]),
     )
+
+
+def random_instance(rng, n: int, p: float, cycle: int) -> Instance:
+    """Random valid instance: n tasks, each earlier task is a predecessor with probability p,
+    times 1..cycle, input order shuffled so it differs from the topological order."""
+    names = [f"T{i}" for i in range(n)]
+    predecessors = {x: tuple(q for q in names[:i] if rng.random() < p) for i, x in enumerate(names)}
+    times = {x: float(rng.randint(1, cycle)) for x in names}
+    order = names[:]
+    rng.shuffle(order)
+    return Instance(times=times, predecessors=predecessors, cycle_time=float(cycle), order=tuple(order))
+
+
+def make_instance(spec, cycle: float) -> Instance:
+    """spec: list of (name, time, predecessors)."""
+    return Instance(
+        times={n: float(t) for n, t, _ in spec},
+        predecessors={n: tuple(p) for n, _, p in spec},
+        cycle_time=float(cycle),
+        order=tuple(n for n, _, _ in spec),
+    )
