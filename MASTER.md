@@ -61,6 +61,9 @@ Files in `contracts/` can only be changed by the integration engineer (see secti
 Given tasks, precedence and a cycle time C: use as **few stations as possible** so that no station's
 total task time exceeds C and the U-line rule holds. Secondary goal: workloads as even as possible.
 
+hcjajdihriofwhaisfhiaehfihrrihfiohrofho
+
+
 **Inputs** (`contracts/problem_input.schema.json`): tasks (1 to 50), working time per day, break and down
 time per day (zero or more, below the working time), production per day, optional worker count, optional
 GA settings and seed.
