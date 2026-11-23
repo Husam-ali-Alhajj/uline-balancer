@@ -55,3 +55,16 @@ def test_successful_run_has_no_error(client):
     assert run.status == "succeeded"
     assert run.error is None
     assert run.result is not None
+
+
+def test_stagnation_stopped_run_reports_its_final_generation(client):
+    data = load_example("six_task_input.json")
+    data["ga_settings"].update(max_generations=1000, stagnation_limit=5)
+    with SessionLocal() as session:
+        run_id = str(run_service.create_run(session, ProblemInput.model_validate(data)).id)
+    run_service.execute_run(run_id)
+    run = _load(run_id)
+    assert run.status == "succeeded"
+    assert run.result["ga"]["stop_reason"] == "stagnation"
+    assert run.progress_generation == run.result["ga"]["generations_run"] < 1000
+    assert run.progress_max == 1000

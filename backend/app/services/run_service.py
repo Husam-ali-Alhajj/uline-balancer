@@ -150,9 +150,11 @@ def _update_if_status(run_id: uuid.UUID, expected: str, **values: object) -> boo
         return outcome.rowcount == 1
 
 
-def _fail(run_id: uuid.UUID, code: str, message: str) -> None:
+def _fail(run_id: uuid.UUID, code: str, message: str, final_progress: dict) -> None:
     error = {"code": code, "message": message}
-    if not _update_if_status(run_id, "running", status="failed", error=error, finished_at=_now()):
+    if not _update_if_status(
+        run_id, "running", status="failed", error=error, finished_at=_now(), **final_progress
+    ):
         logger.warning("run %s is no longer running; discarding its error %s", run_id, code)
 
 
@@ -169,9 +171,12 @@ def execute_run(run_id: str) -> None:
     problem = ProblemInput.model_validate(data)
 
     last_write = 0.0
+    # the latest progress seen, throttled or not; written with the run's final status
+    final_progress: dict = {}
 
     def progress(generation: int, max_generations: int) -> None:
         nonlocal last_write
+        final_progress.update(progress_generation=generation, progress_max=max_generations)
         now = time.monotonic()
         if now - last_write < 1.0 and generation < max_generations:
             return
@@ -183,11 +188,11 @@ def execute_run(run_id: str) -> None:
     try:
         result = solve_problem(problem, progress)
     except SolverError as exc:
-        _fail(key, exc.code, str(exc))
+        _fail(key, exc.code, str(exc), final_progress)
         return
     except Exception:
         logger.exception("run %s failed", run_id)
-        _fail(key, "internal_error", "The run failed unexpectedly. Please try again.")
+        _fail(key, "internal_error", "The run failed unexpectedly. Please try again.", final_progress)
         return
 
     stored = _update_if_status(
@@ -198,6 +203,7 @@ def execute_run(run_id: str) -> None:
         model_version=result.model_version,
         error=null(),
         finished_at=_now(),
+        **final_progress,
     )
     if not stored:
         logger.warning("run %s was marked failed while it ran; discarding its result", run_id)
