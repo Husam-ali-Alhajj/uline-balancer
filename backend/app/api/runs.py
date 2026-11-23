@@ -18,9 +18,9 @@ SessionDep = Annotated[Session, Depends(get_session)]
 @router.post("", status_code=202, response_model=RunCreated)
 def create_run(problem: ProblemInput, session: SessionDep) -> RunCreated:
     """Validate, create a run (status 'queued'), start it in the background, return its id."""
-    if run_service.count_active(session) >= config.MAX_ACTIVE_RUNS:
+    run = run_service.create_run_within_cap(session, problem, config.MAX_ACTIVE_RUNS)
+    if run is None:
         raise ApiError(429, "too_many_active_runs", "Too many runs in progress. Try again shortly.")
-    run = run_service.create_run(session, problem)
     run_service.start_run(str(run.id))
     session.refresh(run)  # with the inline test executor the run may already be finished
     return RunCreated(run_id=str(run.id), status=run.status)

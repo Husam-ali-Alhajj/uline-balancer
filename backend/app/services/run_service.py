@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import logging
+import threading
 import time
 import uuid
 from datetime import UTC, datetime
@@ -20,6 +21,7 @@ from app.services.solver import SolverError, solve_problem
 
 logger = logging.getLogger(__name__)
 ACTIVE = ("queued", "running")
+_create_lock = threading.Lock()  # see create_run_within_cap
 
 
 def _now() -> datetime:
@@ -44,6 +46,18 @@ def create_run(session: Session, problem: ProblemInput) -> Run:
     session.add(run)
     session.commit()
     return run
+
+
+def create_run_within_cap(session: Session, problem: ProblemInput, max_active: int) -> Run | None:
+    """Create a run unless `max_active` runs are already queued or running (then return None).
+
+    The lock makes the count and the insert one step, so concurrent requests cannot all pass the
+    check. It is per process: the server must run as a single uvicorn process (backend/README.md).
+    """
+    with _create_lock:
+        if count_active(session) >= max_active:
+            return None
+        return create_run(session, problem)
 
 
 def start_run(run_id: str) -> None:

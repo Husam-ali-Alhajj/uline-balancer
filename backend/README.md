@@ -14,6 +14,11 @@ alembic upgrade head                 # creates the tables (SQLite file by defaul
 uvicorn app.main:app --reload        # http://localhost:8000/docs
 ```
 
+**Run exactly one uvicorn process** (no `--workers` above 1, here or in deployment). The cap on
+active runs (`MAX_ACTIVE_RUNS`) is enforced with a lock inside the process, so two server processes
+could each accept runs up to the cap. The GA itself still uses several processes
+(`MAX_WORKER_PROCESSES`), started by the one server process.
+
 ## Check your work (run before every pull request)
 
 ```bash
