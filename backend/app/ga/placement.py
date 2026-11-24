@@ -4,15 +4,21 @@ U-line rule: a task may be placed when ALL its predecessors are already assigned
 (it is then on the 'front' leg of the U) or ALL its successors are already
 assigned (it is then on the 'back' leg).
 
-Side labelling rule (deterministic, so results are reproducible):
-inside one station, repeat: place every task whose predecessors are all assigned
-(side 'front', in input order); if none can be placed, place the first task whose
-successors are all assigned (side 'back'). A task is therefore 'back' only when it
-could not be placed as 'front'.
+Side labelling rule R2 (docs/DECISIONS.md; depends only on the precedence graph and
+the stations, never on input order):
+  1. 'front' if all predecessors are in earlier stations;
+  2. else 'back' if all successors are in earlier stations;
+  3. then, repeatedly, 'front' if all predecessors are in earlier stations or are
+     'front' tasks of this station (front closure);
+  4. every remaining task is 'back'.
+Steps 1 and 2 follow the IE document's own reasons ("entry side, since A is assigned",
+"exit side, since D is assigned"). Every labelling satisfies the IE unfolded-U
+condition p_h <= p_i.
 
-Placing a task only ever makes more tasks eligible, so a station is feasible if
-and only if this loop places every task. That is why one greedy pass is a correct
-check, not a heuristic.
+The station is then ordered: front tasks first (each after its predecessors), then
+back tasks (each after its successors). A station is feasible if and only if this
+places every task: placing a task only ever makes more tasks eligible, so one greedy
+pass is a correct check, not a heuristic.
 """
 
 from __future__ import annotations
@@ -42,31 +48,39 @@ def place_station(
     `assigned` holds the tasks of all earlier stations. It is not modified.
     """
     wanted = set(station_tasks)
-    remaining = [name for name in instance.order if name in wanted]
+    tasks = [name for name in instance.order if name in wanted]
     succ = instance.successors()
-    done = set(assigned)
-    placed: list[Placement] = []
 
-    while remaining:
+    # steps 1 and 2: the side is decided by the earlier stations alone
+    side = {}
+    for name in tasks:
+        label = is_eligible(instance, name, assigned, succ)
+        if label is not None:
+            side[name] = label
+
+    # step 3: front closure inside the station; this is also the front tasks' order
+    done = set(assigned)
+    placed = [Placement(name, "front") for name in tasks if side.get(name) == "front"]
+    done.update(p.name for p in placed)
+    progressed = True
+    while progressed:
         progressed = False
-        for name in list(remaining):
-            if is_eligible(instance, name, done, succ) == "front":
+        for name in tasks:
+            if name not in side and is_eligible(instance, name, done, succ) == "front":
+                side[name] = "front"
                 placed.append(Placement(name, "front"))
                 done.add(name)
-                remaining.remove(name)
                 progressed = True
-        if progressed:
-            continue
-        # no task is front-eligible here, so is_eligible can only return "back" or None
-        for name in remaining:
-            if is_eligible(instance, name, done, succ) == "back":
-                placed.append(Placement(name, "back"))
-                done.add(name)
-                remaining.remove(name)
-                progressed = True
-                break
-        if not progressed:
+
+    # step 4: the rest is back; each back task goes after all its successors
+    backs = [name for name in tasks if side.get(name, "back") == "back"]
+    while backs:
+        ready = next((n for n in backs if all(s in done for s in succ[n])), None)
+        if ready is None:
             return None
+        placed.append(Placement(ready, "back"))
+        done.add(ready)
+        backs.remove(ready)
     return placed
 
 

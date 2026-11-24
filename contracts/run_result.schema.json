@@ -44,7 +44,7 @@
                   "properties": {
                     "name": { "type": "string" },
                     "time": { "type": "number" },
-                    "side": { "enum": ["front", "back"], "description": "front = placed because all predecessors were assigned; back = placed because all successors were assigned (see MASTER.md section 5)." }
+                    "side": { "enum": ["front", "back"], "description": "Leg of the U: front if all predecessors are in earlier stations; else back if all successors are in earlier stations; then front if all predecessors are in earlier stations or are front tasks of this station; the rest back (rule R2, MASTER.md section 4)." }
                   }
                 }
               },

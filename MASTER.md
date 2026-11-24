@@ -75,9 +75,16 @@ than the working time per day.
 - all its predecessors are already assigned (it goes on the **front** leg), or
 - all its successors are already assigned (it goes on the **back** leg).
 
-Inside a station, tasks are ordered deterministically: repeat "place every task whose predecessors are all
-assigned (front); if none, place the first task whose successors are all assigned (back)". A task is labelled
-`back` only when it could not be placed as `front`. This is implemented in `backend/app/ga/placement.py`.
+**Side labels (rule R2).** Inside a station, a task is labelled:
+1. `front` if all its predecessors are in earlier stations;
+2. else `back` if all its successors are in earlier stations;
+3. then, repeatedly, `front` if all its predecessors are in earlier stations or are `front` tasks of this
+   station (front closure);
+4. every remaining task is `back`.
+
+The labels depend only on the precedence graph and the stations, never on input order, and steps 1 and 2 follow
+the IE document's reasoning (section 8). A station is ordered front tasks first, each after its predecessors, then
+back tasks, each after its successors. This is implemented in `backend/app/ga/placement.py`.
 
 ## 5. Formulas (single definition; code and docs must match)
 

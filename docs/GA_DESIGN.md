@@ -37,6 +37,19 @@ The decoder then passes each station's task set to `place_station` (`placement.p
 tasks and labels each one `front` or `back`. The U-line rule stays only in `placement.py`; the decoder
 only uses it.
 
+**Side labels (rule R2, docs/DECISIONS.md).** Inside a station, a task is labelled:
+1. `front` if all its predecessors are in earlier stations;
+2. else `back` if all its successors are in earlier stations;
+3. then, repeatedly, `front` if all its predecessors are in earlier stations or are `front` tasks of this
+   station (front closure);
+4. every remaining task is `back`.
+
+Steps 1 and 2 follow the reasons the IE document gives in section 8 ("entry side, since A is assigned",
+"exit side, since D is assigned"). The labels depend only on the precedence graph and the stations, never
+on input order, and every labelling satisfies the IE unfolded-U condition p_h <= p_i (section 6). The
+station is ordered front tasks first, each after its predecessors, then back tasks, each after its
+successors.
+
 **Why the result is always feasible**
 
 - Each station load is at most C, because a task is added only when it fits.
@@ -70,7 +83,7 @@ C = 480 / 60 = 8. Total work content = 4+3+5+2+5+4 = 23, N_min = ceil(23 / 8) = 
 | E | 5 | C | F |
 | F | 4 | D, E | - |
 
-### 4.1 Chromosome `[A, F, B, C, D, E]`
+### 4.1 Chromosome `[A, F, B, C, D, E]` (hand-worked example)
 
 | Step | Station | Assigned before step | Remaining time | Scan (first eligible that fits) | Added |
 |---|---|---|---|---|---|
@@ -84,8 +97,12 @@ C = 480 / 60 = 8. Total work content = 4+3+5+2+5+4 = 23, N_min = ceil(23 / 8) = 
 | 8 | 3 | ... , D | 6 | E: predecessor C assigned, 5 <= 6 | E |
 
 Result: **A+F, B+C, D+E**. `place_station` labels them A front, F back (F was placed because its
-successor set is empty, not because its predecessors were done); B, C, D, E front. This is exactly
-`contracts/examples/six_task_result.json`.
+successor set is empty, not because its predecessors were done); B, C, D, E front.
+
+`contracts/examples/six_task_result.json` is the GA's actual output (seed 42): A+F, B+E, C+D, a
+different solution with the same loads 8, 8, 7 and the same fitness 3.0417. Its labels are A front,
+F back; B front, E back (its successor F is in station 1); C front, D back (its successor F is in
+station 1, while its predecessor C is in the same station).
 
 Loads 8, 8, 7. SI = sqrt(0^2 + 0^2 + 1^2) = 1. F = 3 + 1 / (3 * 8) = **3.0417**.
 N = N_min, so this is optimal. Every 3-station solution has loads 8, 8, 7 in some order, so all optimal
@@ -106,10 +123,12 @@ Chromosome `[A, D, C, B, E, F, H, G]` decodes to A+D, B+C, E+F, G+H with loads 1
 N = 4 = N_min, SI = 1, F = 4 + 1 / 40 = 4.025. This matches the IE doc's U-line result
 (E = 97.5%, d = 2.5%). It becomes a test in task A.1.6.
 
-Side labels differ from the IE doc's table: the IE doc calls C and G "exit side", but `place_station`
-labels them `front`, because a task is `back` only when it cannot be placed as `front` (MASTER.md
-section 4). C can go front once B is placed in the same station, and G can go front because F is in an
-earlier station. The stations are the same; only the labels differ. Only D is `back` here.
+Side labels under R2: A front, D back; B front, C back; E front, F front; G front, H back. This matches
+the IE doc's table on 7 of 8 tasks. The IE doc calls G "exit side". B and G look the same to R2: the only predecessor is in an earlier
+station, and the only successor is in the same station and on the exit side. R2 therefore labels both
+front, while the IE table labels B entry and G exit. They are not identical in the graph (G's successor H
+is the last task of its chain, B's successor C is not), so a rule with an extra case could separate them;
+R2 does not have one. Both labels for G satisfy the unfolded-U condition.
 
 ## 5. Operators
 
