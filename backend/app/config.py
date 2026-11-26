@@ -31,3 +31,12 @@ MAX_WORKER_PROCESSES = int(os.environ.get("MAX_WORKER_PROCESSES", "2"))
 MAX_ACTIVE_RUNS = int(os.environ.get("MAX_ACTIVE_RUNS", "4"))
 MAX_RUN_SECONDS = float(os.environ.get("MAX_RUN_SECONDS", "60"))
 MAX_BODY_BYTES = int(os.environ.get("MAX_BODY_BYTES", "1000000"))
+
+# Database connections per process (SQLAlchemy pool_size + max_overflow). The server serves the API;
+# a GA worker needs one connection at a time. Total = server + MAX_WORKER_PROCESSES x worker, which
+# must stay well under the Supabase pooler limit (15 on the free plan). Defaults: 3 + 2 and 1 + 0.
+DB_POOL_SIZE = int(os.environ.get("DB_POOL_SIZE", "3"))
+DB_MAX_OVERFLOW = int(os.environ.get("DB_MAX_OVERFLOW", "2"))
+DB_WORKER_POOL_SIZE = int(os.environ.get("DB_WORKER_POOL_SIZE", "1"))
+DB_WORKER_MAX_OVERFLOW = int(os.environ.get("DB_WORKER_MAX_OVERFLOW", "0"))
+IN_WORKER = False  # set to True in GA worker processes by services/executor.py

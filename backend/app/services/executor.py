@@ -21,6 +21,11 @@ class InlineExecutor:
 _executor = None
 
 
+def _mark_worker() -> None:
+    """Runs first in every worker process, before the database module is imported there."""
+    config.IN_WORKER = True
+
+
 def get_executor():  # noqa: ANN201
     global _executor
     if _executor is None:
@@ -32,6 +37,7 @@ def get_executor():  # noqa: ANN201
             _executor = ProcessPoolExecutor(
                 max_workers=config.MAX_WORKER_PROCESSES,
                 mp_context=multiprocessing.get_context("spawn"),
+                initializer=_mark_worker,
             )
     return _executor
 
