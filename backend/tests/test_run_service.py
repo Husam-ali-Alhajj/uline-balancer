@@ -1,5 +1,7 @@
 """Worker writes are guarded by the run's status, so a run marked failed stays failed (check G3)."""
 
+import time
+
 from helpers import load_example
 
 from app.db.session import SessionLocal
@@ -68,3 +70,41 @@ def test_stagnation_stopped_run_reports_its_final_generation(client):
     assert run.result["ga"]["stop_reason"] == "stagnation"
     assert run.progress_generation == run.result["ga"]["generations_run"] < 1000
     assert run.progress_max == 1000
+
+
+def test_slow_progress_writes_do_not_slow_the_ga(client, monkeypatch):
+    """On a remote database one write takes about a second; the GA must not wait for it."""
+    original = run_service._update_if_status
+
+    def slow_progress_write(run_id, expected, **values):
+        if set(values) == {"progress_generation", "progress_max"}:
+            time.sleep(0.5)
+        return original(run_id, expected, **values)
+
+    monkeypatch.setattr(run_service, "_update_if_status", slow_progress_write)
+    run_id = _new_run()
+    run_service.execute_run(run_id)
+    run = _load(run_id)
+    assert run.status == "succeeded"
+    assert run.result["ga"]["runtime_seconds"] < 0.4
+    assert run.progress_generation == run.result["ga"]["generations_run"]
+
+
+def test_progress_is_written_while_the_run_is_running(client, monkeypatch):
+    seen = []
+
+    def solve_and_watch(problem, progress=None):
+        progress(5, 100)
+        deadline = time.monotonic() + 5
+        while time.monotonic() < deadline and not seen:
+            run = _load(run_id)
+            if run.progress_generation == 5:
+                seen.append((run.status, run.progress_generation, run.progress_max))
+            time.sleep(0.05)
+        return solve_problem(problem)
+
+    monkeypatch.setattr(run_service, "solve_problem", solve_and_watch)
+    run_id = _new_run()
+    run_service.execute_run(run_id)
+    assert seen == [("running", 5, 100)]
+    assert _load(run_id).status == "succeeded"

@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import logging
 import threading
-import time
 import uuid
 from datetime import UTC, datetime
 
@@ -150,6 +149,54 @@ def _update_if_status(run_id: uuid.UUID, expected: str, **values: object) -> boo
         return outcome.rowcount == 1
 
 
+class _ProgressWriter:
+    """Writes a run's latest progress from a background thread, at most once per `interval` seconds.
+
+    The GA only records the latest generation and never waits for the database: on a remote
+    database one write takes over a second, which used to slow the GA down by the same amount.
+    """
+
+    def __init__(self, run_id: uuid.UUID, interval: float = 1.0) -> None:
+        self._run_id = run_id
+        self._interval = interval
+        self._lock = threading.Lock()
+        self._latest: tuple[int, int] | None = None
+        self._written: tuple[int, int] | None = None
+        self._stop = threading.Event()
+        self._thread = threading.Thread(target=self._loop, daemon=True)
+
+    def start(self) -> None:
+        self._thread.start()
+
+    def update(self, generation: int, max_generations: int) -> None:
+        with self._lock:
+            self._latest = (generation, max_generations)
+
+    def stop(self) -> dict:
+        """Stop the thread and return the latest progress, to be written with the final status."""
+        self._stop.set()
+        self._thread.join()
+        with self._lock:
+            latest = self._latest
+        if latest is None:
+            return {}
+        return {"progress_generation": latest[0], "progress_max": latest[1]}
+
+    def _loop(self) -> None:
+        while not self._stop.wait(self._interval):
+            with self._lock:
+                latest = self._latest
+            if latest is None or latest == self._written:
+                continue
+            try:
+                _update_if_status(
+                    self._run_id, "running", progress_generation=latest[0], progress_max=latest[1]
+                )
+                self._written = latest
+            except Exception:  # a failed progress write must not stop the run; retried next tick
+                logger.warning("progress write for run %s failed", self._run_id, exc_info=True)
+
+
 def _fail(run_id: uuid.UUID, code: str, message: str, final_progress: dict) -> None:
     error = {"code": code, "message": message}
     if not _update_if_status(
@@ -170,30 +217,19 @@ def execute_run(run_id: str) -> None:
         return
     problem = ProblemInput.model_validate(data)
 
-    last_write = 0.0
-    # the latest progress seen, throttled or not; written with the run's final status
-    final_progress: dict = {}
-
-    def progress(generation: int, max_generations: int) -> None:
-        nonlocal last_write
-        final_progress.update(progress_generation=generation, progress_max=max_generations)
-        now = time.monotonic()
-        if now - last_write < 1.0 and generation < max_generations:
-            return
-        last_write = now
-        _update_if_status(
-            key, "running", progress_generation=generation, progress_max=max_generations
-        )
-
+    writer = _ProgressWriter(key)
+    writer.start()
     try:
-        result = solve_problem(problem, progress)
+        result = solve_problem(problem, writer.update)
     except SolverError as exc:
-        _fail(key, exc.code, str(exc), final_progress)
+        _fail(key, exc.code, str(exc), writer.stop())
         return
     except Exception:
         logger.exception("run %s failed", run_id)
-        _fail(key, "internal_error", "The run failed unexpectedly. Please try again.", final_progress)
+        _fail(key, "internal_error", "The run failed unexpectedly. Please try again.", writer.stop())
         return
+    # the latest progress is written together with the final status
+    final_progress = writer.stop()
 
     stored = _update_if_status(
         key,

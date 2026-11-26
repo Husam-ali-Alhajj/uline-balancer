@@ -272,4 +272,6 @@ Known gaps:
   check this yet.
 - Comparison with a straight-line baseline (IE formulas document section 10) is an open decision.
 - Frontend: no input form and no real U diagram yet.
-- Not done yet: user accounts, deployment and the Supabase connection.
+- Supabase: connected and tested (A.2.4, see `backend/README.md`, "Using Supabase"). About 300 ms per round
+  trip from the development machine; one `GET /runs/{id}` takes about 1.1 s.
+- Not done yet: user accounts and deployment.

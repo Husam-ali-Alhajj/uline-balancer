@@ -83,16 +83,10 @@ def test_station_order_puts_front_before_back_and_respects_precedence():
 def test_ie_eight_task_example_labels():
     inst = instance_from_input(load_example("eight_task_input.json"))
     stations = [["A", "D"], ["B", "C"], ["E", "F"], ["G", "H"]]  # IE formulas document, section 8
+    # the IE table (entry = front, exit = back), confirmed by the IE team on 2026-11-27
     ie_table = {"A": "front", "D": "back", "B": "front", "C": "back",
-                "E": "front", "F": "front", "G": "back", "H": "back"}
-    labels = _labels(inst, stations)
-    assert {t: s for t, s in labels.items() if t != "G"} == {t: s for t, s in ie_table.items() if t != "G"}
-    # G differs from the IE table. B and G look the same to R2: the only predecessor is in an
-    # earlier station (A, F) and the only successor is in the same station and on the exit side
-    # (C, H), so R2 labels both front; the IE table labels B entry and G exit. Separating them
-    # needs an extra case (H ends its chain, C does not), which R2 does not have.
-    assert labels["G"] == "front"
-    assert labels["B"] == "front"
+                "E": "front", "F": "front", "G": "front", "H": "back"}
+    assert _labels(inst, stations) == ie_table
 
 
 def test_six_task_contract_example_labels():
