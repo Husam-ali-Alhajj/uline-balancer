@@ -17,3 +17,16 @@ The agreement between the backend, the frontend and the ML module.
 
 Cross-field validation rules that JSON Schema cannot express are listed in `MASTER.md` section 4 and implemented in
 `backend/app/schemas/problem.py`. Fitness, workers and the max task count are provisional (see `docs/DECISIONS.md`).
+
+## Authentication (designed in A.2.8, not built yet)
+
+See `docs/DECISIONS.md`, "User accounts design". The JSON schemas do not change.
+
+- Every `/runs` endpoint accepts an optional `Authorization: Bearer <Supabase access token>` header. No header: a guest.
+- `GET /runs` lists only the caller's runs; a guest gets `[]`.
+- `GET /runs/{id}` and `DELETE /runs/{id}` on another user's run: 404 `not_found`. Guests cannot delete runs.
+- New errors, in the standard format `{"error": {"code", "message", "details": []}}`:
+  - 401 `expired_token`: the token has expired; refresh it and retry.
+  - 401 `invalid_token`: any other failed check (signature, unknown key, issuer, audience, malformed).
+  - 503 `auth_unavailable`: the backend could not fetch Supabase's public keys, so it could not check the
+    token. Retry later. Requests without a token are not affected.
