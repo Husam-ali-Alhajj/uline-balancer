@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import random
 import time
+from collections import OrderedDict
 from collections.abc import Callable, Sequence
 
 from .decoder import decode
@@ -20,6 +21,13 @@ from .placement import place_station
 from .types import Instance, Placement, SolveOutcome
 
 ProgressCallback = Callable[[int, int], None]
+
+# Fitness cache: the most recently used chromosomes, at most this many (least recently used dropped first).
+# 20,000 covers a whole default run (population 50 x 101 generations = 5,050 chromosomes) and about
+# 40 generations at the largest population (500), which keeps the elites and recent offspring that
+# repeat. A full cache is about 10 MB at 50 tasks (about 0.5 KB per entry). Not a GA setting: it changes
+# memory and speed, never results.
+FITNESS_CACHE_SIZE = 20_000
 
 DEFAULTS = {
     "population_size": 50,
@@ -66,7 +74,9 @@ def solve(
     seed: int | None = None,
     progress: ProgressCallback | None = None,
     time_limit_s: float = 60.0,
+    cache_size: int | None = FITNESS_CACHE_SIZE,
 ) -> SolveOutcome:
+    """Run the GA. `cache_size` is for tests: 0 turns the cache off, None makes it unbounded."""
     started = time.perf_counter()
     used_seed = seed if seed is not None else random.randrange(2**31)
     rng = random.Random(used_seed)
@@ -76,14 +86,20 @@ def solve(
     elitism = int(cfg["elitism_count"])
     tasks = list(instance.order)
 
-    # Decoding is deterministic, so a chromosome's fitness can be cached.
-    cache: dict[tuple[str, ...], float] = {}
+    # Decoding is deterministic, so a chromosome's fitness can be cached (bounded LRU, see above).
+    cache: OrderedDict[tuple[str, ...], float] = OrderedDict()
 
     def fitness_of(chromosome: list[str]) -> float:
         key = tuple(chromosome)
-        if key not in cache:
-            cache[key] = _score(instance, chromosome)
-        return cache[key]
+        if key in cache:
+            cache.move_to_end(key)
+            return cache[key]
+        value = _score(instance, chromosome)
+        if cache_size != 0:
+            cache[key] = value
+            if cache_size is not None and len(cache) > cache_size:
+                cache.popitem(last=False)
+        return value
 
     population = [rng.sample(tasks, len(tasks)) for _ in range(pop_size)]
     fitnesses = [fitness_of(c) for c in population]

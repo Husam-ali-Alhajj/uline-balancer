@@ -266,8 +266,11 @@ Known gaps:
   only when `stagnation_limit` is raised as well (tested with 1000).
 - GA quality: with the default settings, 50-task chains end 2 to 3 stations above N_min (mixed graphs 1,
   wide graphs 0). The largest settings bring chains to 1 above N_min.
-- GA memory: the fitness cache is unbounded. One run with the largest settings and a raised stagnation
-  limit used up to 126 MB (49 MB with the default stagnation limit).
+- GA memory: the fitness cache keeps at most 20,000 chromosomes (least recently used dropped first,
+  `FITNESS_CACHE_SIZE` in `ga/engine.py`); results are the same with any size (A.2.7). Worst case measured
+  (50 tasks, population 500, 1000 generations, stagnation limit 1000, 60 s limit): the run adds about
+  14 MB at its peak instead of about 42 MB unbounded (peak process 31 MB instead of 60 MB), with the
+  same runtime, generations and result. Unbounded, the cache would keep growing with run length.
 - Validation: the backend rejects a cycle time longer than the total work content; the frontend does not
   check this yet.
 - Comparison with a straight-line baseline (IE formulas document section 10) is an open decision.
