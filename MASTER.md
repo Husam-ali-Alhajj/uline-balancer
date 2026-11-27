@@ -24,8 +24,8 @@ metrics, charts and short recommendations. Every run is stored so it can be reop
 a neural network that warm-starts the GA, phone layouts, special constraints such as zoning or parallel
 stations.
 
-User accounts with saved calculations (Supabase Auth): the backend part is built (A.2.9); the frontend sign-in
-is not built yet.
+User accounts with saved calculations (Supabase Auth): the backend part is built; the frontend sign-in is not
+built yet.
 
 ## 2. Team and ownership
 
@@ -277,23 +277,17 @@ and in another terminal `cd frontend && npm install && npm run dev`.
 
 Known gaps:
 
-- GA: the real GA runs behind the API (Sprint 1, Track A). The baseline is still a stub (task C.1.2).
-- GA performance (Sprint 1 measurement, 50 tasks, 3 seeds per graph shape): the defaults finish in under
-  1 s. With the largest population and generation settings (500 and 1000) and the default
-  stagnation limit (30), a run takes 4 to 21 s and stops on stagnation. It reaches the 60 s time limit
-  only when `stagnation_limit` is raised as well (tested with 1000).
-- GA quality: with the default settings, 50-task chains end 2 to 3 stations above N_min (mixed graphs 1,
-  wide graphs 0). The largest settings bring chains to 1 above N_min.
-- GA memory: the fitness cache keeps at most 20,000 chromosomes (least recently used dropped first,
-  `FITNESS_CACHE_SIZE` in `ga/engine.py`); results are the same with any size (A.2.7). Worst case measured
-  (50 tasks, population 500, 1000 generations, stagnation limit 1000, 60 s limit): the run adds about
-  14 MB at its peak instead of about 42 MB unbounded (peak process 31 MB instead of 60 MB), with the
-  same runtime, generations and result. Unbounded, the cache would keep growing with run length.
-- Validation: the backend rejects a cycle time longer than the total work content; the frontend does not
-  check this yet.
-- Comparison with a straight-line baseline (IE formulas document section 10) is an open decision.
-- Frontend: no input form and no real U diagram yet.
-- Supabase: connected and tested (A.2.4, see `backend/README.md`, "Using Supabase"). About 300 ms per round
-  trip from the development machine; one `GET /runs/{id}` takes about 1.1 s.
-- User accounts: backend done (A.2.9); the frontend sign-in (Track B) is not built yet. Guest runs are never
-  cleaned up yet (a later job). Not done yet: deployment.
+- GA quality: on small problems (8 to 12 tasks) the default settings find the proven optimum in almost every
+  run. On 50 tasks they end on average 0 to 0.3 stations above the best known result. N_min is often not
+  reachable at all: on 50-task chains the optimum is on average 3 stations above it.
+- The baseline heuristic is still a stub.
+- Comparison with a straight-line baseline is an open decision.
+- Frontend: no input form, no real U diagram and no sign-in yet. It does not repeat the backend's checks yet
+  (cycle time longer than the total work content, GA-settings limits).
+- After a forced server kill, the GA worker can keep running up to `MAX_RUN_SECONDS`; its late write is
+  ignored.
+- The server must run as one uvicorn process: the cap on active runs is kept per process.
+- Guest runs are never deleted yet (no cleanup job).
+- Supabase is slow from the development machine: about 300 ms per round trip, about 1.1 s for one
+  `GET /runs/{id}`.
+- Not deployed yet; the deployment guide is not written.

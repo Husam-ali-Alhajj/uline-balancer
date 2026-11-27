@@ -46,8 +46,10 @@ MODES = {
 }
 
 
-def make_instance(shape: str, n: int, index: int) -> Instance:
-    rng = random.Random(f"{shape}-{n}-{index}")  # str seeds are hashed with SHA-512: stable everywhere
+def make_instance(shape: str, n: int, index: int, seed_set: str = "") -> Instance:
+    """seed_set "" is the set of the first ("before") table; "A" and "B" are the tuning and the final sets."""
+    prefix = f"{seed_set}:" if seed_set else ""
+    rng = random.Random(f"{prefix}{shape}-{n}-{index}")  # str seeds are hashed with SHA-512: stable everywhere
     names = [f"T{i}" for i in range(n)]
     preds: dict[str, tuple[str, ...]] = {names[0]: ()}
     for i in range(1, n):

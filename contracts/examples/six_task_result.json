@@ -35,9 +35,9 @@
             "side": "front"
           },
           {
-            "name": "E",
+            "name": "C",
             "time": 5.0,
-            "side": "back"
+            "side": "front"
           }
         ],
         "load": 8.0,
@@ -48,14 +48,14 @@
         "index": 3,
         "tasks": [
           {
-            "name": "C",
-            "time": 5.0,
+            "name": "D",
+            "time": 2.0,
             "side": "front"
           },
           {
-            "name": "D",
-            "time": 2.0,
-            "side": "back"
+            "name": "E",
+            "time": 5.0,
+            "side": "front"
           }
         ],
         "load": 7.0,
@@ -112,147 +112,147 @@
       {
         "generation": 2,
         "best_fitness": 3.0417,
-        "avg_fitness": 3.2605
+        "avg_fitness": 3.2379
       },
       {
         "generation": 3,
         "best_fitness": 3.0417,
-        "avg_fitness": 3.2587
+        "avg_fitness": 3.2802
       },
       {
         "generation": 4,
         "best_fitness": 3.0417,
-        "avg_fitness": 3.3266
+        "avg_fitness": 3.3491
       },
       {
         "generation": 5,
         "best_fitness": 3.0417,
-        "avg_fitness": 3.3419
+        "avg_fitness": 3.2784
       },
       {
         "generation": 6,
         "best_fitness": 3.0417,
-        "avg_fitness": 3.2829
+        "avg_fitness": 3.3521
       },
       {
         "generation": 7,
         "best_fitness": 3.0417,
-        "avg_fitness": 3.2611
+        "avg_fitness": 3.2185
       },
       {
         "generation": 8,
         "best_fitness": 3.0417,
-        "avg_fitness": 3.286
+        "avg_fitness": 3.262
       },
       {
         "generation": 9,
         "best_fitness": 3.0417,
-        "avg_fitness": 3.3237
+        "avg_fitness": 3.2155
       },
       {
         "generation": 10,
         "best_fitness": 3.0417,
-        "avg_fitness": 3.2164
+        "avg_fitness": 3.1747
       },
       {
         "generation": 11,
         "best_fitness": 3.0417,
-        "avg_fitness": 3.348
+        "avg_fitness": 3.3252
       },
       {
         "generation": 12,
         "best_fitness": 3.0417,
-        "avg_fitness": 3.3697
+        "avg_fitness": 3.306
       },
       {
         "generation": 13,
         "best_fitness": 3.0417,
-        "avg_fitness": 3.2592
+        "avg_fitness": 3.2163
       },
       {
         "generation": 14,
         "best_fitness": 3.0417,
-        "avg_fitness": 3.3086
+        "avg_fitness": 3.3224
       },
       {
         "generation": 15,
         "best_fitness": 3.0417,
-        "avg_fitness": 3.1731
+        "avg_fitness": 3.3053
       },
       {
         "generation": 16,
         "best_fitness": 3.0417,
-        "avg_fitness": 3.2378
+        "avg_fitness": 3.196
       },
       {
         "generation": 17,
         "best_fitness": 3.0417,
-        "avg_fitness": 3.2599
+        "avg_fitness": 3.3641
       },
       {
         "generation": 18,
         "best_fitness": 3.0417,
-        "avg_fitness": 3.2566
+        "avg_fitness": 3.2168
       },
       {
         "generation": 19,
         "best_fitness": 3.0417,
-        "avg_fitness": 3.323
+        "avg_fitness": 3.3034
       },
       {
         "generation": 20,
         "best_fitness": 3.0417,
-        "avg_fitness": 3.3465
+        "avg_fitness": 3.2595
       },
       {
         "generation": 21,
         "best_fitness": 3.0417,
-        "avg_fitness": 3.2392
+        "avg_fitness": 3.152
       },
       {
         "generation": 22,
         "best_fitness": 3.0417,
-        "avg_fitness": 3.2784
+        "avg_fitness": 3.1926
       },
       {
         "generation": 23,
         "best_fitness": 3.0417,
-        "avg_fitness": 3.1957
+        "avg_fitness": 3.1092
       },
       {
         "generation": 24,
         "best_fitness": 3.0417,
-        "avg_fitness": 3.1924
+        "avg_fitness": 3.3038
       },
       {
         "generation": 25,
         "best_fitness": 3.0417,
-        "avg_fitness": 3.1939
+        "avg_fitness": 3.242
       },
       {
         "generation": 26,
         "best_fitness": 3.0417,
-        "avg_fitness": 3.2998
+        "avg_fitness": 3.2171
       },
       {
         "generation": 27,
         "best_fitness": 3.0417,
-        "avg_fitness": 3.3478
+        "avg_fitness": 3.24
       },
       {
         "generation": 28,
         "best_fitness": 3.0417,
-        "avg_fitness": 3.4311
+        "avg_fitness": 3.3494
       },
       {
         "generation": 29,
         "best_fitness": 3.0417,
-        "avg_fitness": 3.3433
+        "avg_fitness": 3.1937
       },
       {
         "generation": 30,
         "best_fitness": 3.0417,
-        "avg_fitness": 3.3871
+        "avg_fitness": 3.2374
       }
     ]
   },

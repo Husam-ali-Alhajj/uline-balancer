@@ -100,10 +100,8 @@ C = 480 / 60 = 8. Total work content = 4+3+5+2+5+4 = 23, N_min = ceil(23 / 8) = 
 Result: **A+F, B+C, D+E**. `place_station` labels them A front, F back (F was placed because its
 successor set is empty, not because its predecessors were done); B, C, D, E front.
 
-`contracts/examples/six_task_result.json` is the GA's actual output (seed 42): A+F, B+E, C+D, a
-different solution with the same loads 8, 8, 7 and the same fitness 3.0417. Its labels are A front,
-F back; B front, E back (its successor F is in station 1); C front, D back (its successor F is in
-station 1, while its predecessor C is in the same station).
+`contracts/examples/six_task_result.json` is the GA's actual output (seed 42) and is this same solution,
+A+F, B+C, D+E, with the same labels.
 
 Loads 8, 8, 7. SI = sqrt(0^2 + 0^2 + 1^2) = 1. F = 3 + 1 / (3 * 8) = **3.0417**.
 N = N_min, so this is optimal. Every 3-station solution has loads 8, 8, 7 in some order, so all optimal
@@ -152,7 +150,9 @@ Child = `[F, E, C, D, B, A]`.
 
 1. **Seed.** Use the given seed, or draw one at random when it is `null`. All randomness goes through one
    `random.Random(seed)`. The seed used is reported. Same input + same seed = same result.
-2. **Generation 0.** `population_size` random permutations. Decode and score each one.
+2. **Generation 0.** `population_size` random permutations, except that the first one is replaced by the
+   greedy chromosome: all tasks, largest time first (ties: input order). Decoded, that is the classic greedy
+   that fills each station with the largest eligible task that fits. Decode and score each one.
 3. **Next generation.** Copy the best `elitism_count` chromosomes unchanged. Fill the rest: select two
    parents by tournament; with probability `crossover_rate` the child is OX(parent1, parent2), otherwise
    a copy of parent1; then apply swap mutation. One child per pair.
@@ -192,7 +192,7 @@ Confirmed by the integration engineer:
 - Decoder: first eligible task that fits, scanning the chromosome from the start; close the station when
   none fits.
 - Mutation: one swap per chromosome with probability `mutation_rate`.
-- Generation 0: all random permutations.
+- Generation 0: random permutations plus one greedy chromosome (largest task first); see "Quality".
 - Convergence: recorded every generation.
 - New generation: one child per pair of parents.
 
@@ -204,3 +204,64 @@ Smaller defaults proposed here (change them before A.1.4 / A.1.5 if needed):
 - If `elitism_count` is not smaller than `population_size` (the contract sets no maximum), it is capped at
   `population_size - 1` so the population can still change.
 - No early stop when N = N_min; the run continues so SI can still improve.
+
+## 9. Quality
+
+Measured with `backend/scripts/ga_quality.py` against exact optima (`app/ga/exact.py`): branch-and-bound
+for up to 12 tasks, and dynamic programming for pure chains of any length. Instances: cycle time 20, task
+times 1 to 20; chain = one line; wide = each task has one predecessor with probability 0.5; mixed = 1 or 2
+predecessors among the 5 tasks before it. All seeds are fixed. Max settings = population 500, 1000
+generations, stagnation limit 1000, 60 s limit.
+
+**Main finding: N_min is often not reachable.** On 50-task chains the exact optimum is on average 3.0 stations
+above N_min and never equal to it; on 8 to 12 tasks it equals N_min in only 33% to 90% of instances. A gap to
+N_min is therefore not a GA error; quality is measured against the exact optimum where one is known.
+
+### Before (30 instances x 3 seeds per row; runtimes measured with 14 runs in parallel)
+
+| shape | size | exact = N_min | default = exact | default gap to exact | default gap to N_min | default runtime (s) | max = exact | max gap to exact | max gap to N_min | max runtime (s) |
+|---|---|---|---|---|---|---|---|---|---|---|
+| chain | 8 | 57% | 100% | 0.00 | 0.47 | 0.15 | 100% | 0.00 | 0.47 | 28.85 |
+| wide | 8 | 90% | 100% | 0.00 | 0.10 | 0.16 | 100% | 0.00 | 0.10 | 11.50 |
+| mixed | 8 | 80% | 100% | 0.00 | 0.23 | 0.20 | 100% | 0.00 | 0.23 | 15.95 |
+| chain | 10 | 40% | 100% | 0.00 | 0.67 | 0.33 | 100% | 0.00 | 0.67 | 52.00 |
+| wide | 10 | 53% | 100% | 0.00 | 0.63 | 0.23 | 100% | 0.00 | 0.63 | 41.59 |
+| mixed | 10 | 47% | 100% | 0.00 | 0.57 | 0.28 | 100% | 0.00 | 0.57 | 39.62 |
+| chain | 12 | 33% | 100% | 0.00 | 0.83 | 0.40 | 100% | 0.00 | 0.83 | 57.46 |
+| wide | 12 | 60% | 100% | 0.00 | 0.53 | 0.25 | 100% | 0.00 | 0.53 | 45.94 |
+| mixed | 12 | 67% | 98% | 0.02 | 0.39 | 0.32 | 100% | 0.00 | 0.37 | 43.07 |
+| chain | 50 | 0% | 64% | 0.38 | 3.41 | 4.54 | 96% | 0.04 | 3.08 | 60.43 |
+| wide | 50 | n/a | n/a | n/a | 1.26 | 2.28 | n/a | n/a | 1.04 | 60.42 |
+| mixed | 50 | n/a | n/a | n/a | 2.39 | 4.69 | n/a | n/a | 1.94 | 60.63 |
+
+Gaps are in stations, averaged over runs. Up to 12 tasks the defaults find the optimum in 808 of 810 runs.
+The weak spot is 50 tasks, where max settings do clearly better than the defaults.
+
+### Improvements tried (default settings, 50 tasks)
+
+Tuned on one set of instances (set A: 20 per shape x 3 seeds); the final numbers below come from a fresh set
+(set B) never used while tuning. Chains are scored against the exact optimum; wide and mixed against the best
+result max settings found on the same instance (best known), since no exact solver reaches them.
+
+| change | result on set A | kept |
+|---|---|---|
+| (a) one greedy chromosome (largest task first) in generation 0 | wide 0.25 -> 0.00, mixed 0.40 -> 0.20, chain 0.33 -> 0.38 (3 more runs one station worse, out of 60); same runtime | yes |
+| (b) insertion and inversion mutation next to swap (one of the three at random) | no gain (chain 0.35, wide 0.25, mixed 0.45) | no |
+| (c) population and stagnation limit scaled with the task count | population 2n: better (chain 0.22, wide 0.13, mixed 0.30) but 3 to 4 times slower; n or 0.6n: no gain and slower | no |
+| (a) + (b) | same as (a) alone within noise | (a) only |
+
+### After (set B; gap to exact for chains, to best known for wide and mixed)
+
+| shape | size | runs | before: gap | before: = reference | after: gap | after: = reference | before runtime (s) | after runtime (s) |
+|---|---|---|---|---|---|---|---|---|
+| chain | 50 | 20 x 3 | 0.30 | 70% | 0.18 | 82% | 0.89 | 0.80 |
+| wide | 50 | 20 x 3 | 0.27 | 73% | 0.00 | 100% | 0.38 | 0.37 |
+| mixed | 50 | 20 x 3 | 0.63 | 38% | 0.30 | 62% | 0.70 | 0.68 |
+| chain | 12 | 30 x 3 | 0.00 | 100% | 0.00 | 100% | | |
+| wide | 12 | 30 x 3 | 0.00 | 100% | 0.00 | 100% | | |
+| mixed | 12 | 30 x 3 | 0.04 | 96% | 0.03 | 97% | | |
+
+Runtimes: mean of 10 instances, 1 seed, one process on an idle machine (the 2 s budget for 50 tasks).
+On mixed graphs the new defaults beat max settings in 5 of 60 runs. Greedy seeding halves the gap on 50 tasks,
+keeps the 12-task rate, and costs no time; it replaces one random chromosome, so all other random draws and
+the determinism guarantee stay the same.

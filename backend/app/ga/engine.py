@@ -2,7 +2,8 @@
 
 Chromosome: a permutation of task names. Every chromosome is decoded into a feasible solution
 (decoder.py), scored with compute_fitness (lower is better), and evolved with tournament selection,
-order crossover, swap mutation and elitism. All randomness goes through one random.Random(seed),
+order crossover, swap mutation and elitism. Generation 0 is random except one greedy chromosome (largest
+task first). All randomness goes through one random.Random(seed),
 so the same input and seed give the same result.
 """
 
@@ -56,6 +57,13 @@ def _score(instance: Instance, chromosome: Sequence[str]) -> float:
     return compute_fitness(len(stations), metrics.smoothness_index, instance.cycle_time)
 
 
+def greedy_chromosome(instance: Instance) -> list[str]:
+    """Largest task first (ties: input order). Decoded, this is the classic greedy: each station takes the
+    largest eligible task that still fits. One such chromosome in generation 0 gives the GA a good start."""
+    position = {name: i for i, name in enumerate(instance.order)}
+    return sorted(instance.order, key=lambda name: (-instance.times[name], position[name]))
+
+
 def _place(instance: Instance, stations: list[list[str]]) -> list[list[Placement]]:
     placed_stations: list[list[Placement]] = []
     assigned: set[str] = set()
@@ -102,6 +110,7 @@ def solve(
         return value
 
     population = [rng.sample(tasks, len(tasks)) for _ in range(pop_size)]
+    population[0] = greedy_chromosome(instance)  # replaces a random one; the other draws stay the same
     fitnesses = [fitness_of(c) for c in population]
 
     best_index = min(range(pop_size), key=lambda i: fitnesses[i])

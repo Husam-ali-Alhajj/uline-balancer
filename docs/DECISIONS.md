@@ -16,16 +16,21 @@ Status: **Decided**, **Provisional** (the scaffold uses this value until the mee
 | Phones | Out of scope; desktop-first, usable on a tablet | Scope and time |
 | Removed from stack | pydantic-settings, uv, slowapi (rate limiting is a Should), frontend unit tests | Time constraints |
 | Branching | Long-lived track branches `Frontend` and `AI`, controlled and merged by the integration engineer at least weekly | Teammates are new to git and work in separate folders; teammates never merge or create branches |
-| D4 | User accounts with saved previous calculations are required (Supabase Auth, owner on each run; design in "User accounts design" below, not built yet) | Needed so a user can reopen past runs |
 | Cycle time accounts for break and down time (`break_time_per_day`) | `C = (working_time_per_day - break_time_per_day) / production_per_day` | Raw working time overstates available capacity |
 | Cycle time upper bound | Input is rejected when C > Σt (total work content) | IE formulas document section 2: max(tᵢ) <= C <= Σt |
 | Formulas and notation | MASTER.md section 5 follows the IE formulas document (latest version); LV and gap to N_min added (code in A.1.7) | One definition for code, report and IE team |
 | Side labels (R2) | Front if all predecessors are in earlier stations; else back if all successors are in earlier stations; then front closure inside the station; the rest back (`ga/placement.py`, `docs/GA_DESIGN.md` section 2) | Follows the IE document's own reasons in section 8. The previous rule (front closure first, R0) was already independent of input order; the change is to match the IE reasoning. Decided in Sprint 2 task A.2.3. **Confirmed by the IE team on 2026-11-27**: they added the rule to the IE formulas document (section 5, "Entry/exit labeling rule") and corrected section 8 to G entry, so all 8 labels match. The B/G question is closed |
 | GA design | `docs/GA_DESIGN.md`: first-eligible-that-fits decoder, one swap per chromosome with probability `mutation_rate`, random generation 0, convergence every generation, one child per parent pair | Decided in Sprint 1 task A.1.2 |
+| Branch model | The integration engineer (Track A) works directly on `main`; `develop` is retired; Tracks B and C keep their `Frontend` and `AI` branches, merged by the integration engineer | One integration point that is always green; fewer branches for a team new to git |
+| Database | Supabase Postgres in Frankfurt (eu-central-1), via the session pooler with `sslmode=require`; RLS on for every table with no policies (migration 0002) | Closest region to the team and the planned hosts; RLS blocks Supabase's public roles, and only the backend (table owner) reaches the data |
+| D12 Deployment | Postponed. Plan: frontend on Vercel, backend on Koyeb (it can run the background GA worker; Vercel cannot). Ready: `backend/Procfile` and `backend/.python-version`. Not written yet: the deployment guide. Development and the demo run locally | Finish the features first; local runs are enough for the demo |
+| Versions and connections | Direct dependencies pinned with `==`; CI on Python 3.12. Database connections per process: server 3 + 2 overflow, each GA worker 1 + 0, so 7 in total with 2 workers | Reproducible installs; stays well under the Supabase free-plan pooler limit (15) |
+| User accounts (D4) | Built in the backend as designed in "User accounts design" below: optional Supabase sign-in token, runs scoped to their owner, guest runs by id only. Frontend sign-in not built yet | Users can reopen their own past runs; guests can still use the app |
+| Fitness cache bound | At most 20,000 chromosomes, least recently used dropped first (`FITNESS_CACHE_SIZE` in `ga/engine.py`); not a GA setting | Memory stays bounded on long runs; results are identical with any cache size |
 
 ## User accounts design (D4, task A.2.8)
 
-Design only; nothing is built yet. Decided by the integration engineer on 2026-11-27 unless marked otherwise.
+Decided by the integration engineer on 2026-11-27. The backend part is built; the frontend sign-in is not.
 Sources: the Supabase Auth docs (`guides/auth/signing-keys`, `guides/auth/jwts`, `guides/auth/jwt-fields`,
 `guides/auth/sessions`, `guides/api/api-keys`), read on 2026-11-27.
 
@@ -128,9 +133,8 @@ to block it).
 | ID | Question |
 |---|---|
 | D6 | Special constraints (zoning, fixed tasks, parallel stations): none for the MVP? |
-| D8 | Baseline heuristic and the GA success target (set the number after the baseline exists) |
+| D8 | Baseline heuristic and the GA success target (set the number after the baseline exists). **Proposed target, not decided** (from the exact-optimum measurement, `backend/scripts/ga_quality.py`): with the default settings, (a) the GA finds the exact optimum in at least 95% of runs on 8- to 12-task instances of every shape (measured: 99.8%, 808 of 810 runs), and (b) on 50-task chains its mean gap to the exact optimum is at most 0.5 stations (measured: 0.38 before greedy seeding, 0.18 after, on a fresh set; `docs/GA_DESIGN.md` section 9). The margin covers seed noise. Automatic check: (a) a pytest test runs the GA with a fixed seed on 30 fixed 12-task instances (10 per shape) and compares with `solve_exact`, about 10 s; (b) is too slow for every test run (about 1 minute), so `ga_quality.py` checks it before each release. The baseline part stays open |
 | Straight-line baseline | IE formulas document section 10 asks to also compare against a straight-line baseline. Add it (needs a contract change), or keep only the U-line baseline? |
 | D9 | What exactly does the ML module predict or recommend? |
 | D10 | ML training data: how it is generated and how much |
-| D12 | Where the app is deployed and who keeps it running |
 | D13 to D18 | Repository rules, sprint rhythm, contract freeze date, cut list, benchmark instances, ownership: proposed in the PDF and in CONTRIBUTING.md and MASTER.md |
