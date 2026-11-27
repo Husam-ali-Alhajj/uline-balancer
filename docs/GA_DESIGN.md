@@ -252,16 +252,30 @@ result max settings found on the same instance (best known), since no exact solv
 
 ### After (set B; gap to exact for chains, to best known for wide and mixed)
 
-| shape | size | runs | before: gap | before: = reference | after: gap | after: = reference | before runtime (s) | after runtime (s) |
-|---|---|---|---|---|---|---|---|---|
-| chain | 50 | 20 x 3 | 0.30 | 70% | 0.18 | 82% | 0.89 | 0.80 |
-| wide | 50 | 20 x 3 | 0.27 | 73% | 0.00 | 100% | 0.38 | 0.37 |
-| mixed | 50 | 20 x 3 | 0.63 | 38% | 0.30 | 62% | 0.70 | 0.68 |
-| chain | 12 | 30 x 3 | 0.00 | 100% | 0.00 | 100% | | |
-| wide | 12 | 30 x 3 | 0.00 | 100% | 0.00 | 100% | | |
-| mixed | 12 | 30 x 3 | 0.04 | 96% | 0.03 | 97% | | |
+Reproduce with `python scripts/ga_tune.py --set B --size 50 --count 20` and `--size 12 --count 30`.
 
-Runtimes: mean of 10 instances, 1 seed, one process on an idle machine (the 2 s budget for 50 tasks).
-On mixed graphs the new defaults beat max settings in 5 of 60 runs. Greedy seeding halves the gap on 50 tasks,
-keeps the 12-task rate, and costs no time; it replaces one random chromosome, so all other random draws and
-the determinism guarantee stay the same.
+| shape | size | runs | greedy alone: gap | greedy alone: = ref | before: gap | before: = ref | after: gap | after: = ref | before runtime (s) | after runtime (s) |
+|---|---|---|---|---|---|---|---|---|---|---|
+| chain | 50 | 20 x 3 | 0.95 | 25% | 0.30 | 70% | 0.18 | 82% | 0.89 | 0.80 |
+| wide | 50 | 20 x 3 | 0.00 | 100% | 0.27 | 73% | 0.00 | 100% | 0.38 | 0.37 |
+| mixed | 50 | 20 x 3 | 0.60 | 45% | 0.68 | 33% | 0.35 | 62% | 0.70 | 0.68 |
+| chain | 12 | 30 x 3 | 0.03 | 97% | 0.00 | 100% | 0.00 | 100% | | |
+| wide | 12 | 30 x 3 | 0.03 | 97% | 0.00 | 100% | 0.00 | 100% | | |
+| mixed | 12 | 30 x 3 | 0.13 | 87% | 0.04 | 96% | 0.03 | 97% | | |
+
+- "Greedy alone" is the greedy chromosome decoded once, with no GA (one result per instance).
+- The wide and mixed references at 50 tasks come from max-settings runs that stop on the 60 s time limit, so
+  they can differ slightly between machines and runs (mixed moved by 0.05 between two runs; chain and wide
+  did not move).
+- Runtimes: mean of 10 instances, 1 seed, one process on an idle machine (the 2 s budget for 50 tasks).
+- Greedy seeding halves the gap on 50 tasks, keeps the 12-task rate and costs no time. It replaces one random
+  chromosome, so all other random draws and the determinism guarantee stay the same.
+
+**The greedy start and the baseline.** Generation 0 includes the largest-task-first chromosome, which is the same
+idea as the planned baseline heuristic (largest task first with the U-line rule). Elitism keeps the best
+chromosome, so the GA result is never worse than that starting point, by construction. Any GA-vs-baseline
+comparison must say this: the GA cannot lose to a largest-task-first baseline, and the fair measure of the GA
+itself is its improvement over the greedy start (the "greedy alone" columns). That improvement is large on
+chains (0.95 to 0.18 stations) and mixed graphs (0.60 to 0.35), and zero on 50-task wide graphs, where the
+greedy alone already matches the best known result. Before this change the GA's defaults did worse than the
+greedy alone on wide and mixed graphs (0.27 and 0.68 against 0.00 and 0.60).
