@@ -40,3 +40,7 @@ DB_MAX_OVERFLOW = int(os.environ.get("DB_MAX_OVERFLOW", "2"))
 DB_WORKER_POOL_SIZE = int(os.environ.get("DB_WORKER_POOL_SIZE", "1"))
 DB_WORKER_MAX_OVERFLOW = int(os.environ.get("DB_WORKER_MAX_OVERFLOW", "0"))
 IN_WORKER = False  # set to True in GA worker processes by services/executor.py
+
+# Supabase project address, e.g. https://<project-ref>.supabase.co (public, not a secret; kept in .env so no
+# project id is committed). Used to verify sign-in tokens (app/auth.py). Unset: every request is a guest.
+SUPABASE_URL = os.environ.get("SUPABASE_URL", "").strip().rstrip("/")

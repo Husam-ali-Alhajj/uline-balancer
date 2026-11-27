@@ -103,7 +103,7 @@ def solve_problem(
         ),
         ga=r.GARunInfo(
             seed=outcome.seed,
-            settings=problem.ga_settings.model_copy(update={"seed": outcome.seed}),
+            settings=r.StoredGASettings(**(problem.ga_settings.model_dump() | {"seed": outcome.seed})),
             generations_run=outcome.generations_run,
             stop_reason=outcome.stop_reason,
             best_fitness=outcome.best_fitness,

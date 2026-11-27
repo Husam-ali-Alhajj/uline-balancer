@@ -34,9 +34,11 @@ def _aware(value: datetime | None) -> datetime | None:
     return value
 
 
-def create_run(session: Session, problem: ProblemInput) -> Run:
+def create_run(session: Session, problem: ProblemInput, owner_id: uuid.UUID | None = None) -> Run:
+    """owner_id: the signed-in user's id, or None for a guest run."""
     run = Run(
         id=uuid.uuid4(),
+        owner_id=owner_id,
         title=problem.title,
         status="queued",
         input=problem.model_dump(mode="json"),
@@ -47,7 +49,9 @@ def create_run(session: Session, problem: ProblemInput) -> Run:
     return run
 
 
-def create_run_within_cap(session: Session, problem: ProblemInput, max_active: int) -> Run | None:
+def create_run_within_cap(
+    session: Session, problem: ProblemInput, max_active: int, owner_id: uuid.UUID | None = None
+) -> Run | None:
     """Create a run unless `max_active` runs are already queued or running (then return None).
 
     The lock makes the count and the insert one step, so concurrent requests cannot all pass the
@@ -56,7 +60,7 @@ def create_run_within_cap(session: Session, problem: ProblemInput, max_active: i
     with _create_lock:
         if count_active(session) >= max_active:
             return None
-        return create_run(session, problem)
+        return create_run(session, problem, owner_id)
 
 
 def start_run(run_id: str) -> None:
@@ -91,6 +95,22 @@ def get_run(session: Session, run_id: str) -> Run | None:
     return session.get(Run, key)
 
 
+def get_visible_run(session: Session, run_id: str, user_id: uuid.UUID | None) -> Run | None:
+    """The run if the caller may see it, else None (the API answers 404 either way).
+
+    A guest run (no owner) is readable by anyone who has its id; an owned run only by its owner.
+    """
+    run = get_run(session, run_id)
+    if run is None or (run.owner_id is not None and run.owner_id != user_id):
+        return None
+    return run
+
+
+def can_delete(run: Run, user_id: uuid.UUID | None) -> bool:
+    """Only the owner deletes. A guest run has no owner, so nobody deletes it through the API."""
+    return user_id is not None and run.owner_id == user_id
+
+
 def to_status(run: Run) -> RunStatus:
     progress = None
     if run.progress_generation is not None and run.progress_max:
@@ -108,8 +128,12 @@ def to_status(run: Run) -> RunStatus:
     )
 
 
-def list_runs(session: Session, limit: int = 50) -> list[RunSummary]:
-    runs = session.execute(select(Run).order_by(Run.created_at.desc()).limit(limit)).scalars()
+def list_runs(session: Session, user_id: uuid.UUID | None, limit: int = 50) -> list[RunSummary]:
+    """The caller's runs, newest first. Guest runs are never listed, so a guest gets []."""
+    if user_id is None:
+        return []
+    stmt = select(Run).where(Run.owner_id == user_id).order_by(Run.created_at.desc()).limit(limit)
+    runs = session.execute(stmt).scalars()
     summaries = []
     for run in runs:
         result = run.result or {}

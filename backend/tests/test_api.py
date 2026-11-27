@@ -4,6 +4,7 @@ import copy
 
 import pytest
 from helpers import instance_from_input, load_example
+from tokens import bearer, make_token, use_test_project
 
 from app.ga.placement import check_solution
 
@@ -43,12 +44,14 @@ def test_invalid_input_uses_standard_error_format(client):
     assert error["details"]
 
 
-def test_run_lifecycle(client):
-    created = client.post("/runs", json=_body())
+def test_run_lifecycle(client, monkeypatch):
+    use_test_project(monkeypatch)
+    me = bearer(make_token())
+    created = client.post("/runs", json=_body(), headers=me)
     assert created.status_code == 202
     run_id = created.json()["run_id"]
 
-    status = client.get(f"/runs/{run_id}").json()
+    status = client.get(f"/runs/{run_id}", headers=me).json()
     assert status["status"] == "succeeded"
     assert status["error"] is None
 
@@ -58,11 +61,11 @@ def test_run_lifecycle(client):
     assert status["result"]["ga"]["generations_run"] > 0
     assert status["result"]["ga"]["stop_reason"] in ("max_generations", "stagnation")
 
-    listed = client.get("/runs").json()
+    listed = client.get("/runs", headers=me).json()
     assert any(item["run_id"] == run_id for item in listed)
 
-    assert client.delete(f"/runs/{run_id}").status_code == 204
-    assert client.get(f"/runs/{run_id}").status_code == 404
+    assert client.delete(f"/runs/{run_id}", headers=me).status_code == 204
+    assert client.get(f"/runs/{run_id}", headers=me).status_code == 404
 
 
 def test_unknown_run_is_404_in_standard_format(client):

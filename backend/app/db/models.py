@@ -24,6 +24,8 @@ class Run(Base):
     id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True, default=uuid.uuid4)
     title: Mapped[str | None] = mapped_column(String(100), nullable=True)
     status: Mapped[str] = mapped_column(String(20), nullable=False, index=True)
+    # Supabase user id of the creator; NULL for a guest run (migration 0003)
+    owner_id: Mapped[uuid.UUID | None] = mapped_column(Uuid, nullable=True)
     input: Mapped[dict[str, Any]] = mapped_column(JsonType, nullable=False)
     result: Mapped[dict[str, Any] | None] = mapped_column(JsonType, nullable=True)
     error: Mapped[dict[str, Any] | None] = mapped_column(JsonType, nullable=True)

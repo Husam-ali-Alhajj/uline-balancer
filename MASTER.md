@@ -24,7 +24,8 @@ metrics, charts and short recommendations. Every run is stored so it can be reop
 a neural network that warm-starts the GA, phone layouts, special constraints such as zoning or parallel
 stations.
 
-User accounts with saved calculations are planned (Supabase Auth); not built yet.
+User accounts with saved calculations (Supabase Auth): the backend part is built (A.2.9); the frontend sign-in
+is not built yet.
 
 ## 2. Team and ownership
 
@@ -124,15 +125,17 @@ below 1 and one extra station is always worse than any smoothing gain.
 
 ```
  Browser (React)  <--JSON over HTTPS-->  FastAPI backend  <--SQL-->  Supabase Postgres
-                                          |-- validation (Pydantic)
+   |  (sign-in only)                      |-- sign-in token check (app/auth.py)
+   '---> Supabase Auth                    |-- validation (Pydantic)
                                           |-- run service (start-and-poll)
                                           |-- GA engine   (pure Python)
                                           '-- recommender (pure Python, rule-based first)
 ```
 
 - A **modular monolith**: one FastAPI app, separated modules, no microservices.
-- **Only the backend talks to the database.** The frontend never calls Supabase. The database key stays
-  on the server.
+- **Only the backend talks to the database.** The frontend never reads or writes Supabase tables. Its only
+  Supabase call is sign-in (Supabase Auth, with the public publishable key); it then sends the user's access
+  token to our backend. The database key stays on the server.
 - The GA and the recommender are **pure modules**: no web, no database. Plain data in, plain data out.
 - The GA is CPU-bound, so runs execute in a **separate process** (`ProcessPoolExecutor`, `spawn`).
 
@@ -148,15 +151,24 @@ below 1 and one extra station is always worse than any smoothing gain.
 |---|---|
 | `POST /runs` | validate, create and start a run; returns `{run_id, status}` |
 | `GET /runs/{id}` | status, progress, and the result once `succeeded` |
-| `GET /runs` | list past runs (summary) |
-| `DELETE /runs/{id}` | delete a finished run |
+| `GET /runs` | list the caller's past runs (summary); a guest gets `[]` |
+| `DELETE /runs/{id}` | delete a finished run (owner only) |
 | `POST /validate` | dry-run validation plus cycle time and minimum stations |
 | `GET /health` | liveness |
 
+**Users and guests** (`docs/DECISIONS.md`, "User accounts design"). Every `/runs` endpoint takes an optional
+`Authorization: Bearer <Supabase access token>` header. No header: a guest. A signed-in user's runs get
+`owner_id` = their user id; `GET /runs` lists only their runs, and someone else's run answers 404. A guest run
+(`owner_id` NULL) is never listed, is readable by anyone with its id, and cannot be deleted through the API.
+Tokens are checked in the backend (`app/auth.py`): ES256 signature with the project's public keys (cached
+10 minutes), expiry with 30 s leeway, issuer and audience. Errors: 401 `invalid_token` or `expired_token`,
+503 `auth_unavailable` when the keys cannot be fetched. Sign-in is off when `SUPABASE_URL` is not set.
+
 **Error format (every error):** `{"error": {"code": "...", "message": "...", "details": [{"field": "...", "message": "..."}]}}`
 
-**Data model.** One table so far: `runs` (id, title, status, input JSON, result JSON, error JSON, progress,
-model_version, timestamps). New tables only through an Alembic migration.
+**Data model.** One table so far: `runs` (id, owner_id, title, status, input JSON, result JSON, error JSON,
+progress, model_version, timestamps). New tables only through an Alembic migration. A saved result is loaded
+with loose settings (`StoredGASettings`): today's `GASettings` limits apply to new requests only.
 
 ## 7. Modules and contracts
 
@@ -236,6 +248,12 @@ Deliberately NOT used: Docker, Celery/Redis, microservices, Next.js, Prisma, Typ
 6. Errors shown to users are short and safe, never stack traces.
 7. Real factory data is anonymised and never committed. Benchmark datasets are credited to their source.
 8. Add dependencies only with the integration engineer's approval; keep versions pinned (lock files committed).
+9. Sign-in tokens are verified in the backend on every request that sends one, and never logged. Only ES256 is
+   accepted. A bad or expired token is rejected (401), never treated as a guest.
+10. The frontend uses only the publishable (anon) key, for sign-in. The secret (service_role) key is never in the
+   frontend. RLS stays on with no policies (migration 0002), so that key cannot reach any table.
+11. Someone else's run answers 404, the same as a run that does not exist, so ids of other users' runs are not
+   confirmed.
 
 ## 12. Roadmap
 
@@ -277,4 +295,5 @@ Known gaps:
 - Frontend: no input form and no real U diagram yet.
 - Supabase: connected and tested (A.2.4, see `backend/README.md`, "Using Supabase"). About 300 ms per round
   trip from the development machine; one `GET /runs/{id}` takes about 1.1 s.
-- Not done yet: user accounts and deployment.
+- User accounts: backend done (A.2.9); the frontend sign-in (Track B) is not built yet. Guest runs are never
+  cleaned up yet (a later job). Not done yet: deployment.

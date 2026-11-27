@@ -4,9 +4,7 @@ from __future__ import annotations
 
 from typing import Literal
 
-from pydantic import BaseModel
-
-from .problem import GASettings
+from pydantic import BaseModel, ConfigDict
 
 
 class InstanceSummary(BaseModel):
@@ -59,9 +57,27 @@ class ConvergencePoint(BaseModel):
     avg_fitness: float
 
 
+class StoredGASettings(BaseModel):
+    """The GA settings saved with a result. Loose on purpose: a saved result is shown as it was saved and is
+    never re-checked against today's limits, which live in problem.GASettings and apply to new requests only.
+    Types only, no ranges or cross-field checks; a setting missing from an old result is None, and a setting
+    that no longer exists is kept as saved."""
+
+    model_config = ConfigDict(extra="allow")
+
+    population_size: int | None = None
+    max_generations: int | None = None
+    crossover_rate: float | None = None
+    mutation_rate: float | None = None
+    elitism_count: int | None = None
+    tournament_size: int | None = None
+    stagnation_limit: int | None = None
+    seed: int | None = None
+
+
 class GARunInfo(BaseModel):
     seed: int
-    settings: GASettings
+    settings: StoredGASettings
     generations_run: int
     stop_reason: Literal["max_generations", "stagnation", "time_limit"]
     best_fitness: float
